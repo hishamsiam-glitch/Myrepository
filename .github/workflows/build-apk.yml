@@ -35,12 +35,17 @@ jobs:
       # back to debug signing (see app/android/app/build.gradle.kts). That
       # makes it installable for sideloading/testing, but NOT suitable for
       # a Play Store upload - see docs/PLAY_STORE_RELEASE.md for that.
-      - run: flutter build apk --release
+      #
+      # --split-per-abi produces one APK per CPU architecture instead of a
+      # single universal APK bundling all of them, so each download is a
+      # fraction of the size (a universal build here is ~44MB; arm64-v8a
+      # alone, which covers essentially all modern phones, is far smaller).
+      - run: flutter build apk --release --split-per-abi
 
       - uses: actions/upload-artifact@v4
         with:
           name: scientific-calculator-apk
-          path: app/build/app/outputs/flutter-apk/app-release.apk
+          path: app/build/app/outputs/flutter-apk/*.apk
 
       # Actions artifacts are served from Azure Blob Storage, which isn't
       # reachable from every environment that might want the build (e.g.
@@ -53,8 +58,10 @@ jobs:
           gh release delete sideload-latest --yes --repo "$GITHUB_REPOSITORY" || true
           git push origin :refs/tags/sideload-latest || true
           gh release create sideload-latest \
-            build/app/outputs/flutter-apk/app-release.apk \
+            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
+            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk \
+            build/app/outputs/flutter-apk/app-x86_64-release.apk \
             --repo "$GITHUB_REPOSITORY" \
             --title "Sideload build (debug-signed)" \
-            --notes "Automated debug-signed APK for sideloading/testing only - not suitable for Play Store submission. Built from commit ${{ github.sha }}." \
+            --notes "Automated debug-signed APKs for sideloading/testing only - not suitable for Play Store submission. Most modern phones (including current Samsung devices) should use app-arm64-v8a-release.apk. Built from commit ${{ github.sha }}." \
             --target "${{ github.sha }}"
