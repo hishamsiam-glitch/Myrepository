@@ -7,6 +7,9 @@ on:
       - ".github/workflows/build-apk.yml"
   workflow_dispatch: {}
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -38,3 +41,20 @@ jobs:
         with:
           name: scientific-calculator-apk
           path: app/build/app/outputs/flutter-apk/app-release.apk
+
+      # Actions artifacts are served from Azure Blob Storage, which isn't
+      # reachable from every environment that might want the build (e.g.
+      # a sandboxed agent session). Also publish it as a GitHub Release
+      # asset, which is served from github.com's own CDN instead.
+      - name: Publish sideload release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete sideload-latest --yes --repo "$GITHUB_REPOSITORY" || true
+          git push origin :refs/tags/sideload-latest || true
+          gh release create sideload-latest \
+            build/app/outputs/flutter-apk/app-release.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Sideload build (debug-signed)" \
+            --notes "Automated debug-signed APK for sideloading/testing only - not suitable for Play Store submission. Built from commit ${{ github.sha }}." \
+            --target "${{ github.sha }}"
