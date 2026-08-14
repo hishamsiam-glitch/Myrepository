@@ -1,0 +1,7 @@
+# Copy this file to android/key.properties (which is git-ignored) and fill
+# in the real values before running a release build. See
+# docs/PLAY_STORE_RELEASE.md for how to generate the upload keystore.
+storePassword=your-store-password
+keyPassword=your-key-password
+keyAlias=upload
+storeFile=/absolute/path/to/upload-keystore.jks
