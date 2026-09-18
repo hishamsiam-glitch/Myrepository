@@ -157,6 +157,42 @@ void main() {
     });
   });
 
+  group('running out of time', () {
+    test('still returns a legal move when the budget is gone immediately', () {
+      const fen =
+          'r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 5';
+      final search = Search(Difficulty.expert, seed: 1, timeBudgetMs: 1);
+      final result = search.bestMove(Position.fromFen(fen));
+      expect(result.move, isNotNull);
+      expect(Position.fromFen(fen).legalMoves(), contains(result.move));
+    });
+
+    test('a shorter budget never reports a deeper search', () {
+      const fen =
+          'r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 5';
+      final rushed = Search(Difficulty.expert, seed: 1, timeBudgetMs: 1)
+          .bestMove(Position.fromFen(fen));
+      final unhurried =
+          Search(Difficulty.expert, seed: 1).bestMove(Position.fromFen(fen));
+      expect(rushed.depth, lessThanOrEqualTo(unhurried.depth));
+      expect(unhurried.depth, greaterThan(1));
+    });
+
+    test('a mid-search timeout keeps the last complete depth', () {
+      // Budgeted to expire partway through the deepening, which is exactly
+      // the case where a partially-scored pass must not be kept.
+      const fen =
+          'r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 5';
+      final position = Position.fromFen(fen);
+      final result = Search(Difficulty.expert, seed: 1, timeBudgetMs: 120)
+          .bestMove(position);
+      expect(position.legalMoves(), contains(result.move));
+      // A kept pass is a complete one, so the score is a real evaluation
+      // rather than the sentinel a cut-off search would leave behind.
+      expect(result.score.abs(), lessThan(5000));
+    });
+  });
+
   group('edge cases', () {
     test('returns no move when the game is already over', () {
       // Black is checkmated on the back rank, so there is nothing to search.

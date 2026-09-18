@@ -55,9 +55,15 @@ class SearchRequest {
 /// Alpha-beta search with iterative deepening, quiescence and MVV-LVA move
 /// ordering. One instance handles one move; it is not reused.
 class Search {
-  Search(this.difficulty, {int? seed}) : _random = Random(seed);
+  Search(this.difficulty, {int? seed, int? timeBudgetMs})
+      : _random = Random(seed),
+        timeBudgetMs = timeBudgetMs ?? difficulty.timeBudgetMs;
 
   final Difficulty difficulty;
+
+  /// Wall-clock budget for this move. Defaults to the difficulty's own
+  /// budget; overridable so tests can exercise the cut-short paths.
+  final int timeBudgetMs;
   final Random _random;
   final Stopwatch _clock = Stopwatch();
   int _nodes = 0;
@@ -65,7 +71,7 @@ class Search {
 
   bool get _budgetSpent {
     if (_outOfTime) return true;
-    if (_clock.elapsedMilliseconds >= difficulty.timeBudgetMs) {
+    if (_clock.elapsedMilliseconds >= timeBudgetMs) {
       _outOfTime = true;
     }
     return _outOfTime;
@@ -183,7 +189,12 @@ class Search {
           1,
         );
       }
-      if (_outOfTime && scored.isNotEmpty) return null;
+      // Any pass cut short is discarded whole, even if it was the *first*
+      // root move that ran over: past that point `_negamax` returns static
+      // evaluations, and mixing those into a pass would let it overwrite a
+      // perfectly good shallower result. An empty first pass is handled by
+      // the static fallback in [bestMove].
+      if (_outOfTime) return null;
       scored.add(_ScoredMove(move, score));
       if (score > alpha) alpha = score;
     }
