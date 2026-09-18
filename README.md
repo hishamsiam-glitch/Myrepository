@@ -52,12 +52,16 @@ publishes it to a GitHub Release:
 
 | App | Release tag | File to download |
 |-----|-------------|------------------|
-| Chess | `chess-sideload-latest` | `chess-arm64-v8a-release.apk` |
+| Chess | `chess-sideload-latest` | `Chess-apk.zip` (extract, then install) |
 | Calculator | `sideload-latest` | `app-arm64-v8a-release.apk` |
 
-`arm64-v8a` covers essentially every phone sold in the last decade. Open the
-downloaded file on the phone and allow installing from your browser or file
-manager when Android asks.
+For chess, download the **zip** rather than the `.apk`: Chrome on Android often
+refuses to finalise an `.apk` download while Play Protect verifies it, so it
+sticks at 100% and never completes. A zip downloads normally and is about half
+the size. Extract the APK, then tap it and allow "install unknown apps" for
+whichever app you opened it from. Raw per-ABI APKs are in the same release for
+`adb install`; `arm64-v8a` covers essentially every phone sold in the last
+decade.
 
 These APKs are signed with Flutter's debug key: fine for your own device, not
 valid for a Play Store upload. Both projects read a real upload keystore from

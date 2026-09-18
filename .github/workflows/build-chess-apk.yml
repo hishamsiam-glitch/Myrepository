@@ -74,23 +74,52 @@ jobs:
       # Actions artifacts are served from Azure Blob Storage, which isn't
       # reachable from every environment that might want the build. Also
       # publish to a GitHub Release, which is served from github.com's own CDN.
+      # Chrome on Android will not finalise a downloaded .apk while Play
+      # Protect holds it for verification - it sits at 100% forever. A .zip
+      # downloads normally, and deflate roughly halves the size because the
+      # .so files inside an APK are stored uncompressed. So the zip is the
+      # download we point people at, with the raw APKs kept for anyone using
+      # adb or a file manager that copes.
       - name: Publish sideload release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          cd build/app/outputs/flutter-apk
           for abi in arm64-v8a armeabi-v7a x86_64; do
-            cp "build/app/outputs/flutter-apk/app-$abi-release.apk" \
-               "build/app/outputs/flutter-apk/chess-$abi-release.apk"
+            cp "app-$abi-release.apk" "chess-$abi-release.apk"
           done
+          cp chess-arm64-v8a-release.apk Chess.apk
+          {
+            echo "Chess for Android"
+            echo "================="
+            echo
+            echo "1. Extract Chess.apk from this zip (long-press it in the"
+            echo "   Files app and choose Extract)."
+            echo "2. Tap Chess.apk to install, allowing \"install unknown"
+            echo "   apps\" for whichever app you opened it from."
+            echo
+            echo "arm64-v8a build, for Android 7.0 or newer."
+            echo "sha256: $(sha256sum Chess.apk | cut -d' ' -f1)"
+            echo "size:   $(stat -c%s Chess.apk) bytes"
+            echo
+            echo "Signed with a debug key: fine for your own device, not"
+            echo "valid for a Play Store upload."
+            echo "Built from commit ${{ github.sha }}."
+          } > INSTALL.txt
+          zip -9 Chess-apk.zip Chess.apk INSTALL.txt
+          rm Chess.apk INSTALL.txt
+          cd - > /dev/null
+
           gh release delete chess-sideload-latest --yes --repo "$GITHUB_REPOSITORY" || true
           git push origin :refs/tags/chess-sideload-latest || true
           gh release create chess-sideload-latest \
+            build/app/outputs/flutter-apk/Chess-apk.zip \
             build/app/outputs/flutter-apk/chess-arm64-v8a-release.apk \
             build/app/outputs/flutter-apk/chess-armeabi-v7a-release.apk \
             build/app/outputs/flutter-apk/chess-x86_64-release.apk \
             --repo "$GITHUB_REPOSITORY" \
             --title "Chess - sideload build (debug-signed)" \
-            --notes "Automated debug-signed APKs for installing on your own device - not suitable for Play Store submission. Most phones (including current Samsung devices) should use chess-arm64-v8a-release.apk. Built from commit ${{ github.sha }}." \
+            --notes "Download **Chess-apk.zip** and extract the APK from it. Chrome on Android often refuses to finalise a direct .apk download, leaving it stuck at 100%; a zip downloads normally and is about half the size. The raw per-ABI APKs are here too for adb install. Debug-signed, so fine for your own device but not valid for a Play Store upload. Built from commit ${{ github.sha }}." \
             --target "${{ github.sha }}"
 
       - name: Publish signed release bundle

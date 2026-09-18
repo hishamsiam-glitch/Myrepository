@@ -79,13 +79,22 @@ will happily repeat to save a lost game.
 
 ## Running it on your phone
 
-The quickest route is the APK built by CI on every push:
+The quickest route is the build CI publishes on every push:
 
-1. Open the repository's **Releases** page and download
-   `chess-arm64-v8a-release.apk` from the `chess-sideload-latest` release
-   (`arm64-v8a` covers essentially every phone sold in the last decade).
-2. Open the file on your phone and allow installing from your browser or file
-   manager when Android asks.
+1. Open the repository's **Releases** page and download **`Chess-apk.zip`**
+   from the `chess-sideload-latest` release.
+2. Extract `Chess.apk` from it (long-press the zip in the Files app and choose
+   Extract).
+3. Tap `Chess.apk` to install, allowing "install unknown apps" for whichever
+   app you opened it from when Android asks.
+
+Download the zip rather than the `.apk` directly: Chrome on Android often
+refuses to finalise an `.apk` download while Play Protect verifies it, leaving
+it sitting at "16.84 MB / 16.84 MB" and never completing. A zip downloads
+normally, and is about half the size because the `.so` files inside an APK are
+stored uncompressed. The raw per-ABI APKs are in the same release for `adb
+install` (`arm64-v8a` covers essentially every phone sold in the last decade;
+`armeabi-v7a` also runs on 64-bit devices if you need a smaller file).
 
 These APKs are signed with Flutter's debug key, which is fine for installing
 on your own device but not for a Play Store upload. For that, create an upload
