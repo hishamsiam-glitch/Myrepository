@@ -60,6 +60,20 @@ jobs:
       # --split-per-abi produces one APK per CPU architecture instead of one
       # universal APK bundling all of them, so each download is a fraction of
       # the size.
+      # A maximum-compatibility build, and the one the zip ships: one
+      # universal APK covering every CPU architecture (so a wrong-ABI download
+      # is impossible) with R8 and resource shrinking off (so neither can
+      # mangle the manifest or resources). It is bigger, but "installs
+      # everywhere" beats "small" for a sideloaded build.
+      - name: Build maximum-compatibility APK
+        run: |
+          cp android/gradle.properties android/gradle.properties.bak
+          echo "chess.disableMinify=true" >> android/gradle.properties
+          flutter build apk --release
+          mkdir -p "$RUNNER_TEMP/compat"
+          cp build/app/outputs/flutter-apk/app-release.apk "$RUNNER_TEMP/compat/Chess.apk"
+          mv android/gradle.properties.bak android/gradle.properties
+
       - run: flutter build apk --release --split-per-abi
 
       - name: Build signed app bundle
@@ -88,17 +102,23 @@ jobs:
           for abi in arm64-v8a armeabi-v7a x86_64; do
             cp "app-$abi-release.apk" "chess-$abi-release.apk"
           done
-          cp chess-arm64-v8a-release.apk Chess.apk
+          cp "$RUNNER_TEMP/compat/Chess.apk" Chess.apk
           {
             echo "Chess for Android"
             echo "================="
             echo
-            echo "1. Extract Chess.apk from this zip (long-press it in the"
-            echo "   Files app and choose Extract)."
-            echo "2. Tap Chess.apk to install, allowing \"install unknown"
-            echo "   apps\" for whichever app you opened it from."
+            echo "IMPORTANT: extract Chess.apk out of this zip first, then"
+            echo "install the extracted file. Tapping the APK from inside an"
+            echo "archive app (RAR, ZArchiver) hands the installer a file from"
+            echo "that app's private cache, and Android rejects it with"
+            echo "\"There's a problem with the app file\"."
             echo
-            echo "arm64-v8a build, for Android 7.0 or newer."
+            echo "1. Extract Chess.apk to Downloads."
+            echo "2. Open the Files app, go to Downloads, tap Chess.apk."
+            echo "3. Allow \"install unknown apps\" for Files when asked."
+            echo
+            echo "Universal build: works on every CPU architecture."
+            echo "Requires Android 7.0 or newer."
             echo "sha256: $(sha256sum Chess.apk | cut -d' ' -f1)"
             echo "size:   $(stat -c%s Chess.apk) bytes"
             echo
@@ -119,7 +139,7 @@ jobs:
             build/app/outputs/flutter-apk/chess-x86_64-release.apk \
             --repo "$GITHUB_REPOSITORY" \
             --title "Chess - sideload build (debug-signed)" \
-            --notes "Download **Chess-apk.zip** and extract the APK from it. Chrome on Android often refuses to finalise a direct .apk download, leaving it stuck at 100%; a zip downloads normally and is about half the size. The raw per-ABI APKs are here too for adb install. Debug-signed, so fine for your own device but not valid for a Play Store upload. Built from commit ${{ github.sha }}." \
+            --notes "Download **Chess-apk.zip**, extract Chess.apk out of it, and install the extracted file from the Files app. Two things this works around: Chrome on Android often will not finalise a direct .apk download (it sticks at 100% forever), and tapping an APK from inside an archive app makes Android reject it with \"There is a problem with the app file\". The APK in the zip is a universal build with R8 off, so it installs on any CPU architecture. The per-ABI APKs are also here for adb install. Debug-signed: fine for your own device, not valid for a Play Store upload. Built from commit ${{ github.sha }}." \
             --target "${{ github.sha }}"
 
       - name: Publish signed release bundle

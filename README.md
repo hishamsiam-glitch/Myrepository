@@ -55,13 +55,12 @@ publishes it to a GitHub Release:
 | Chess | `chess-sideload-latest` | `Chess-apk.zip` (extract, then install) |
 | Calculator | `sideload-latest` | `app-arm64-v8a-release.apk` |
 
-For chess, download the **zip** rather than the `.apk`: Chrome on Android often
-refuses to finalise an `.apk` download while Play Protect verifies it, so it
-sticks at 100% and never completes. A zip downloads normally and is about half
-the size. Extract the APK, then tap it and allow "install unknown apps" for
-whichever app you opened it from. Raw per-ABI APKs are in the same release for
-`adb install`; `arm64-v8a` covers essentially every phone sold in the last
-decade.
+For chess, download the **zip**, extract `Chess.apk` out of it, then install
+the extracted file from the Files app. Two Android quirks this works around:
+Chrome often refuses to finalise a direct `.apk` download while Play Protect
+verifies it, so it sticks at 100% forever; and tapping an APK from inside an
+archive app makes Android reject it with "There's a problem with the app file".
+Raw per-ABI APKs are in the same release for `adb install`.
 
 These APKs are signed with Flutter's debug key: fine for your own device, not
 valid for a Play Store upload. Both projects read a real upload keystore from

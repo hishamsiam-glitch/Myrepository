@@ -50,6 +50,11 @@ android {
         }
     }
 
+    // Set `chess.disableMinify=true` in gradle.properties to build without R8
+    // and without resource shrinking. That makes a larger APK, but it removes
+    // both as a variable when an install is being rejected by a device.
+    val minify = (project.findProperty("chess.disableMinify") as String?) != "true"
+
     buildTypes {
         release {
             signingConfig = if (hasReleaseKeystore) {
@@ -57,12 +62,14 @@ android {
             } else {
                 signingConfigs.getByName("debug")
             }
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            isMinifyEnabled = minify
+            isShrinkResources = minify
+            if (minify) {
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+                )
+            }
         }
     }
 }

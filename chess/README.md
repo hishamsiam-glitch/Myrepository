@@ -83,18 +83,28 @@ The quickest route is the build CI publishes on every push:
 
 1. Open the repository's **Releases** page and download **`Chess-apk.zip`**
    from the `chess-sideload-latest` release.
-2. Extract `Chess.apk` from it (long-press the zip in the Files app and choose
-   Extract).
-3. Tap `Chess.apk` to install, allowing "install unknown apps" for whichever
-   app you opened it from when Android asks.
+2. Extract `Chess.apk` **out of** the zip, into Downloads.
+3. Open the Files app, go to Downloads and tap the extracted `Chess.apk`,
+   allowing "install unknown apps" for Files when Android asks.
+
+Extract before installing. Tapping the APK from inside an archive app (RAR,
+ZArchiver) hands the package installer a file in that app's private cache,
+which Android rejects with "There's a problem with the app file" even though
+the APK is perfectly valid.
 
 Download the zip rather than the `.apk` directly: Chrome on Android often
 refuses to finalise an `.apk` download while Play Protect verifies it, leaving
 it sitting at "16.84 MB / 16.84 MB" and never completing. A zip downloads
 normally, and is about half the size because the `.so` files inside an APK are
 stored uncompressed. The raw per-ABI APKs are in the same release for `adb
-install` (`arm64-v8a` covers essentially every phone sold in the last decade;
-`armeabi-v7a` also runs on 64-bit devices if you need a smaller file).
+install`.
+
+The APK inside the zip is deliberately the most compatible build available: a
+single universal APK covering every CPU architecture, with R8 and resource
+shrinking turned off (`chess.disableMinify=true`, see
+`android/app/build.gradle.kts`). It is larger than the per-ABI builds, but for
+something you sideload onto your own phone, installing everywhere beats being
+small.
 
 These APKs are signed with Flutter's debug key, which is fine for installing
 on your own device but not for a Play Store upload. For that, create an upload
