@@ -1,62 +1,65 @@
-# Scientific Calculator
+# Myrepository
 
-A scientific calculator for Android, built with Flutter.
+Two Android apps, each a self-contained Flutter project.
 
-<p>
-  <img src="app/store_assets/screenshots/01_scientific_light.png" width="220" alt="Scientific mode, light theme">
-  <img src="app/store_assets/screenshots/02_functions_light.png" width="220" alt="Live preview of sin(30)">
-  <img src="app/store_assets/screenshots/03_basic_dark.png" width="220" alt="Basic mode, dark theme">
-</p>
+## [`chess/`](chess) — Chess
 
-## Features
+Play chess against the computer offline, at five strengths. Games save
+themselves after every move, so one can be spread across days; every finished
+game is kept in a log you can review move by move, and any entry — saved game
+or log entry — can be deleted.
 
-- Basic arithmetic (`+ − × ÷`), percentages, sign toggle, parentheses
-- Scientific functions: `sin cos tan`, inverses, `ln log`, `sqrt`, `x²`,
-  `x^y`, `1/x`, `x!`, and the constants `π`/`e`
-- Degrees/radians toggle
-- Live result preview as you type
-- Material 3 UI with light and dark themes
+- Full rules: castling, en passant, promotion, checkmate, stalemate, the
+  fifty-move rule, threefold repetition, insufficient material
+- Beginner / Easy / Medium / Hard / Expert, differing in search depth, time
+  budget, and how often they play a less-than-best move
+- Alpha-beta search with iterative deepening and quiescence, running in a
+  background isolate so the board never freezes
 - No permissions, no network access, no ads, no data collection
 
-## Project layout
+See [`chess/README.md`](chess/README.md) for the layout, how the engine works,
+and how to install the CI-built APK on a phone.
 
-```
-app/                          Flutter application
-  lib/
-    calculator_engine.dart    Expression tokenizer/parser/evaluator (pure Dart)
-    calculator_controller.dart Token-based input state for the on-screen keypad
-    number_format.dart        Result formatting (trims float noise, sci. notation)
-    main.dart                 UI (display + keypad)
-  test/
-    calculator_engine_test.dart  44 unit tests covering the math engine
-    widget_test.dart             5 widget tests covering the keypad end to end
-  tool/
-    generate_screenshots.dart Regenerates the Play Store screenshots
-  android/                   Android platform project (Gradle, manifest, icons)
-store_assets/                Play Store icon + feature graphic
-docs/
-  PLAY_STORE_RELEASE.md     Step-by-step guide to build, sign, and publish
-  STORE_LISTING.md          Ready-to-paste store listing copy
-  PRIVACY_POLICY.md         Privacy policy (the app collects no data)
-```
+## [`app/`](app) — Scientific Calculator
 
-## Getting started
+<p>
+  <img src="app/store_assets/screenshots/01_scientific_light.png" width="200" alt="Scientific mode, light theme">
+  <img src="app/store_assets/screenshots/02_functions_light.png" width="200" alt="Live preview of sin(30)">
+  <img src="app/store_assets/screenshots/03_basic_dark.png" width="200" alt="Basic mode, dark theme">
+</p>
+
+A scientific calculator: arithmetic, `sin cos tan` and their inverses,
+`ln log sqrt x² x^y 1/x x!`, `π`/`e`, a degrees/radians toggle and a live
+result preview.
+
+See [`app/README.md`](app/README.md), and
+[`docs/PLAY_STORE_RELEASE.md`](docs/PLAY_STORE_RELEASE.md) for publishing it.
+
+## Building either app
 
 ```bash
-cd app
+cd chess          # or: cd app
 flutter pub get
 flutter analyze
 flutter test
 flutter run
 ```
 
-## Publishing to the Play Store
+## Installing on a phone
 
-See [`docs/PLAY_STORE_RELEASE.md`](docs/PLAY_STORE_RELEASE.md) for the full
-walkthrough: generating an upload key, building the release App Bundle, and
-filling in the Play Console listing (copy is pre-written in
-[`docs/STORE_LISTING.md`](docs/STORE_LISTING.md)).
+Both apps have a CI workflow that builds a release APK on every push and
+publishes it to a GitHub Release:
 
-Publishing itself has to happen from your own Google Play Console account
-— that step needs your Google developer identity and can't be done on your
-behalf.
+| App | Release tag | File to download |
+|-----|-------------|------------------|
+| Chess | `chess-sideload-latest` | `chess-arm64-v8a-release.apk` |
+| Calculator | `sideload-latest` | `app-arm64-v8a-release.apk` |
+
+`arm64-v8a` covers essentially every phone sold in the last decade. Open the
+downloaded file on the phone and allow installing from your browser or file
+manager when Android asks.
+
+These APKs are signed with Flutter's debug key: fine for your own device, not
+valid for a Play Store upload. Both projects read a real upload keystore from
+`android/key.properties` when you provide one (see each project's
+`android/key.properties.example`).

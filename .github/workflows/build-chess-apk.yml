@@ -1,0 +1,110 @@
+name: Build Chess APK
+
+on:
+  push:
+    paths:
+      - "chess/**"
+      - ".github/workflows/build-chess-apk.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: chess
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+      # If upload-key secrets are configured (Settings -> Secrets and
+      # variables -> Actions), reconstruct android/key.properties and the
+      # keystore from them so the release build is signed with a real upload
+      # key instead of falling back to the debug key. Without them the build
+      # still succeeds - see the note on the release below.
+      - name: Restore upload keystore
+        id: signing
+        env:
+          CHESS_UPLOAD_KEYSTORE_BASE64: ${{ secrets.CHESS_UPLOAD_KEYSTORE_BASE64 }}
+        if: env.CHESS_UPLOAD_KEYSTORE_BASE64 != ''
+        run: |
+          echo "$CHESS_UPLOAD_KEYSTORE_BASE64" | base64 -d > android/upload-keystore.jks
+          cat > android/key.properties << EOF
+          storePassword=${{ secrets.CHESS_UPLOAD_STORE_PASSWORD }}
+          keyPassword=${{ secrets.CHESS_UPLOAD_KEY_PASSWORD }}
+          keyAlias=${{ secrets.CHESS_UPLOAD_KEY_ALIAS }}
+          storeFile=upload-keystore.jks
+          EOF
+          echo "signed=true" >> "$GITHUB_OUTPUT"
+
+      # No android/key.properties is committed, so by default this falls back
+      # to debug signing (see chess/android/app/build.gradle.kts). That makes
+      # the APK installable for sideloading onto your own device, but NOT
+      # suitable for a Play Store upload.
+      #
+      # --split-per-abi produces one APK per CPU architecture instead of one
+      # universal APK bundling all of them, so each download is a fraction of
+      # the size.
+      - run: flutter build apk --release --split-per-abi
+
+      - name: Build signed app bundle
+        if: steps.signing.outputs.signed == 'true'
+        run: flutter build appbundle --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chess-apk
+          path: chess/build/app/outputs/flutter-apk/*.apk
+
+      # Actions artifacts are served from Azure Blob Storage, which isn't
+      # reachable from every environment that might want the build. Also
+      # publish to a GitHub Release, which is served from github.com's own CDN.
+      - name: Publish sideload release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            cp "build/app/outputs/flutter-apk/app-$abi-release.apk" \
+               "build/app/outputs/flutter-apk/chess-$abi-release.apk"
+          done
+          gh release delete chess-sideload-latest --yes --repo "$GITHUB_REPOSITORY" || true
+          git push origin :refs/tags/chess-sideload-latest || true
+          gh release create chess-sideload-latest \
+            build/app/outputs/flutter-apk/chess-arm64-v8a-release.apk \
+            build/app/outputs/flutter-apk/chess-armeabi-v7a-release.apk \
+            build/app/outputs/flutter-apk/chess-x86_64-release.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Chess - sideload build (debug-signed)" \
+            --notes "Automated debug-signed APKs for installing on your own device - not suitable for Play Store submission. Most phones (including current Samsung devices) should use chess-arm64-v8a-release.apk. Built from commit ${{ github.sha }}." \
+            --target "${{ github.sha }}"
+
+      - name: Publish signed release bundle
+        if: steps.signing.outputs.signed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp build/app/outputs/bundle/release/app-release.aab \
+             build/app/outputs/bundle/release/chess-release.aab
+          gh release delete chess-playstore-latest --yes --repo "$GITHUB_REPOSITORY" || true
+          git push origin :refs/tags/chess-playstore-latest || true
+          gh release create chess-playstore-latest \
+            build/app/outputs/bundle/release/chess-release.aab \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Chess - Play Store upload bundle (signed)" \
+            --notes "Signed with the real upload key - this is the .aab to upload to Play Console. Built from commit ${{ github.sha }}." \
+            --target "${{ github.sha }}"
