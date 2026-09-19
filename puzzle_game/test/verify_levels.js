@@ -45,6 +45,7 @@ function forwardSolve(rows, cap) {
   const lvl = new Level(rows);
   const W = lvl.width;
   const n = W * lvl.height;
+  if (n > 255) throw new Error('forward solver assumes fewer than 256 cells');
   const nbr = [-W, W, -1, 1];
   const floor = lvl.floor;
   const target = lvl.target;
@@ -96,12 +97,23 @@ function forwardSolve(rows, cap) {
     return min;
   }
 
-  const seen = new Set();
-  const queue = []; // {boxes, player, depth}
+  // Visited set: box configuration packed into a double (cell indices are
+  // < 256 and there are at most 6 boxes, so 48 bits), then the player's
+  // normalized region inside a per-configuration Set.
+  const seen = new Map();
+  let seenCount = 0;
+  const queue = []; // {boxes, norm, depth}
   const push = (boxes, norm, depth) => {
-    const key = boxes.join(',') + '|' + norm;
-    if (seen.has(key)) return;
-    seen.add(key);
+    let key = 0;
+    for (let i = 0; i < boxes.length; i++) key = key * 256 + boxes[i];
+    let regions = seen.get(key);
+    if (!regions) {
+      regions = new Set();
+      seen.set(key, regions);
+    }
+    if (regions.has(norm)) return;
+    regions.add(norm);
+    seenCount++;
     queue.push({ boxes, norm, depth });
   };
   occ.fill(0);
@@ -114,8 +126,8 @@ function forwardSolve(rows, cap) {
     const { boxes, norm, depth } = queue[head++];
     let done = true;
     for (const b of boxes) if (!target[b]) { done = false; break; }
-    if (done) return { pushes: depth, states: seen.size };
-    if (seen.size >= cap) return { pushes: null, states: seen.size };
+    if (done) return { pushes: depth, states: seenCount };
+    if (seenCount >= cap) return { pushes: null, states: seenCount };
     occ.fill(0);
     for (const b of boxes) occ[b] = 1;
     flood(norm);
@@ -139,7 +151,7 @@ function forwardSolve(rows, cap) {
       }
     }
   }
-  return { pushes: -1, states: seen.size }; // exhausted: unsolvable
+  return { pushes: -1, states: seenCount }; // exhausted: unsolvable
 }
 
 // ---------------------------------------------------------------------------
