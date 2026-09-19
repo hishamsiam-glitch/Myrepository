@@ -30,13 +30,16 @@ jobs:
 
   # Publish the game to GitHub Pages so it can be opened on a phone by URL:
   # https://<owner>.github.io/<repo>/
-  # Pages must be enabled once in the repository settings (Settings ->
-  # Pages -> Source: GitHub Actions); the configure-pages step below also
-  # tries to enable it automatically.
+  # Pages must be enabled once by the repository owner (Settings -> Pages
+  # -> Build and deployment -> Source: "GitHub Actions"). The workflow token
+  # is not allowed to create the Pages site itself, so until that is done
+  # this job fails at configure-pages; continue-on-error keeps that from
+  # turning the whole run red while the test job is green.
   deploy:
     needs: test
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    continue-on-error: true
     permissions:
       contents: read
       pages: write

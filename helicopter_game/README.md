@@ -58,8 +58,11 @@ for iPhone testing serve over HTTPS or use the GitHub Pages deployment.
 
 The `Helicopter game` workflow in `.github/workflows/helicopter-game.yml`
 runs the smoke test and publishes this folder to GitHub Pages on every
-push, at `https://<owner>.github.io/<repo>/`. If the first deploy fails,
-enable Pages once under **Settings -> Pages -> Source: GitHub Actions**.
+push, at `https://<owner>.github.io/<repo>/`. The deploy job only works
+once Pages has been enabled by the repository owner: **Settings -> Pages
+-> Build and deployment -> Source: GitHub Actions**. Until then the deploy
+job is skipped as a non-blocking failure and the test job still reports
+the result.
 
 ## Tests
 
