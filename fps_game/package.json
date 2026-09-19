@@ -1,0 +1,14 @@
+{
+  "name": "gyro-strike",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "First-person shooter for phones, aimed and steered with the phone's motion sensors (Three.js)",
+  "scripts": {
+    "start": "npx --yes http-server . -p 8080 -c-1",
+    "test": "node test/level.test.js && node test/smoke.test.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1"
+  }
+}

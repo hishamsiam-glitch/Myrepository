@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0b1220">
+  <title>Gyro Strike</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="surface"></div>
+  <div id="stick"><div></div></div>
+
+  <div id="hud">
+    <div id="vignette"></div>
+    <div id="crosshair"></div>
+    <div id="topbar">
+      <div id="zone"></div>
+      <div id="compass" title="Direction to the objective">
+        <svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="rgba(0,0,0,0.4)" stroke="rgba(255,255,255,0.4)"/><path d="M17 4 L23 20 L17 16 L11 20 Z" fill="#ffc14f"/></svg>
+      </div>
+      <div id="score">0</div>
+    </div>
+    <div id="mission">
+      <div class="title"></div>
+      <div class="progress"></div>
+    </div>
+    <div id="toast"></div>
+    <div id="status">
+      <div class="label">Health</div>
+      <div class="bar" id="health"><div></div></div>
+      <div class="label">Ammo</div>
+      <div id="ammo">0</div>
+    </div>
+    <div id="hint"></div>
+    <button id="btn-recenter" class="hud-btn" title="Recenter tilt">&#x27F3;</button>
+    <button id="btn-pause" class="hud-btn" title="Pause">&#x23F8;</button>
+    <button id="fire">FIRE</button>
+  </div>
+
+  <div id="screen-title" class="screen visible">
+    <div class="panel">
+      <h1>Gyro Strike</h1>
+      <p>Fight your way through the compound to the extraction pad. Turn by turning your phone, walk by tilting it.</p>
+      <div class="buttons">
+        <button id="btn-continue" class="primary">Continue</button>
+        <button id="btn-new">New game</button>
+        <button id="btn-howto">How to play</button>
+        <button id="btn-settings">Settings</button>
+      </div>
+      <div id="sensor-status">Checking motion sensors...</div>
+      <p id="best" class="small"></p>
+    </div>
+  </div>
+
+  <div id="screen-howto" class="screen">
+    <div class="panel">
+      <h2>How to play</h2>
+      <p>Hold the phone in landscape in front of you like a window into the game. Tap &#x27F3; whenever the neutral pose feels off.</p>
+      <table id="howto-table">
+        <tr><td>Turn / aim</td><td>Rotate the phone left or right, like turning your body.</td></tr>
+        <tr><td>Walk</td><td><b>Tilt</b> scheme: tip the top edge away from you to walk forward, towards you to back up.<br><b>Gyro look</b> scheme: hold a finger on the left half; slide it down to back up.<br><b>Touch</b> scheme: left-half joystick.</td></tr>
+        <tr><td>Strafe</td><td>Tilt the phone left or right (right edge down = step right).</td></tr>
+        <tr><td>Look up / down</td><td>Only in the <b>Gyro look</b> scheme: tilt the phone up or down. In <b>Tilt</b> the aim stays level and hostiles are engaged at eye height.</td></tr>
+        <tr><td>Fire</td><td>Hold the FIRE button, or touch anywhere on the right half of the screen.</td></tr>
+        <tr><td>Checkpoints</td><td>Walk through the glowing cyan rings. Your progress is saved there and you respawn there if you die.</td></tr>
+        <tr><td>Missions</td><td>Some areas trigger a mission: clear the room, collect data cores, race a timer, or hold out. Gates open when the mission is done; failing sends you back to the last checkpoint.</td></tr>
+        <tr><td>Pickups</td><td>Yellow = ammo, green = health, cyan = data core.</td></tr>
+        <tr><td>Desktop</td><td>WASD move, arrows or mouse (click to lock) look, Space fire, R recenter, Esc pause.</td></tr>
+      </table>
+      <div class="buttons"><button id="btn-howto-back" class="primary">Back</button></div>
+    </div>
+  </div>
+
+  <div id="screen-settings" class="screen">
+    <div class="panel">
+      <h2>Settings</h2>
+      <div class="settings-row"><label for="set-scheme">Control scheme</label>
+        <select id="set-scheme">
+          <option value="tilt">Tilt to move (all sensors)</option>
+          <option value="gyro">Gyro look + hold to walk</option>
+          <option value="touch">Touch sticks (no sensors)</option>
+        </select></div>
+      <div class="settings-row"><label for="set-turn">Turn sensitivity <span id="set-turn-val"></span></label><input id="set-turn" type="range" min="0.5" max="3" step="0.1"></div>
+      <div class="settings-row"><label for="set-tilt">Tilt range (deg) <span id="set-tilt-val"></span></label><input id="set-tilt" type="range" min="10" max="35" step="1"></div>
+      <div class="settings-row"><label for="set-look">Touch look sensitivity <span id="set-look-val"></span></label><input id="set-look" type="range" min="0.4" max="2.5" step="0.1"></div>
+      <div class="settings-row"><label for="set-invpitch">Invert look up/down</label><input id="set-invpitch" type="checkbox"></div>
+      <div class="settings-row"><label for="set-invstrafe">Invert strafe tilt</label><input id="set-invstrafe" type="checkbox"></div>
+      <div class="settings-row"><label for="set-sound">Sound</label><input id="set-sound" type="checkbox"></div>
+      <div class="settings-row"><label for="set-vibrate">Vibration</label><input id="set-vibrate" type="checkbox"></div>
+      <div class="buttons"><button id="btn-settings-back" class="primary">Done</button></div>
+    </div>
+  </div>
+
+  <div id="screen-pause" class="screen">
+    <div class="panel">
+      <h2>Paused</h2>
+      <p class="stats" id="pause-stats"></p>
+      <div class="buttons">
+        <button id="btn-resume" class="primary">Resume</button>
+        <button id="btn-pause-recenter">Recenter tilt</button>
+        <button id="btn-pause-settings">Settings</button>
+        <button id="btn-quit">Quit to title</button>
+      </div>
+      <p class="small">Progress is saved at the last checkpoint you passed.</p>
+    </div>
+  </div>
+
+  <div id="screen-mission" class="screen">
+    <div class="panel">
+      <h2 id="mission-title">Mission</h2>
+      <p id="mission-brief"></p>
+      <div class="buttons"><button id="btn-mission-go" class="primary">Go</button></div>
+    </div>
+  </div>
+
+  <div id="screen-dead" class="screen">
+    <div class="panel">
+      <h2>You were killed</h2>
+      <p class="stats" id="dead-stats"></p>
+      <div class="buttons">
+        <button id="btn-respawn" class="primary">Respawn at checkpoint</button>
+        <button id="btn-dead-quit">Quit to title</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-failed" class="screen">
+    <div class="panel">
+      <h2>Mission failed</h2>
+      <p id="failed-reason"></p>
+      <div class="buttons">
+        <button id="btn-retry" class="primary">Retry from checkpoint</button>
+        <button id="btn-failed-quit">Quit to title</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-win" class="screen">
+    <div class="panel">
+      <h2>Extraction complete</h2>
+      <p>You made it out of the compound.</p>
+      <p class="stats" id="win-stats"></p>
+      <div class="buttons">
+        <button id="btn-again" class="primary">Play again</button>
+        <button id="btn-win-title">Title screen</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="rotate">Please rotate your phone to landscape.</div>
+
+  <script type="module" src="js/game.js"></script>
+</body>
+</html>

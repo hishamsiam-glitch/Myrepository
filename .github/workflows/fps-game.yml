@@ -1,0 +1,69 @@
+name: FPS game
+
+on:
+  push:
+    paths:
+      - "fps_game/**"
+      - ".github/workflows/fps-game.yml"
+  workflow_dispatch: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: fps_game
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gyro-strike-screenshots
+          path: fps_game/test/screenshot-*.png
+          if-no-files-found: ignore
+
+  # Build the Android wrapper app (fps_game/android) and publish the
+  # debug-signed APK as a GitHub Release asset for sideloading.
+  apk:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: fps_game/android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.11.1"
+      - run: gradle assembleRelease --no-daemon
+      - name: Rename APK
+        run: cp app/build/outputs/apk/release/app-release.apk gyro-strike.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gyro-strike-apk
+          path: fps_game/android/gyro-strike.apk
+      - name: Publish sideload release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete fps-sideload-latest --yes --repo "$GITHUB_REPOSITORY" || true
+          git push origin :refs/tags/fps-sideload-latest || true
+          gh release create fps-sideload-latest \
+            gyro-strike.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Gyro Strike APK (debug-signed, sideload)" \
+            --notes "Automated debug-signed APK of the Gyro Strike first-person shooter for sideloading/testing only - not suitable for Play Store submission. Landscape only; plays best on a phone with a gyroscope. Requires Android 8.0+. Built from commit ${{ github.sha }}." \
+            --target "${{ github.sha }}"

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Crosshair over a cyan disc (108dp adaptive foreground). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#123A55"
+        android:pathData="M54,26 a28,28 0 1,0 0.01,0 z" />
+    <path
+        android:strokeColor="#4FE3FF"
+        android:strokeWidth="3.5"
+        android:fillColor="#00000000"
+        android:pathData="M54,37 a17,17 0 1,0 0.01,0 z" />
+    <path
+        android:fillColor="#4FE3FF"
+        android:pathData="M52.5,28 L55.5,28 L55.5,42 L52.5,42 Z" />
+    <path
+        android:fillColor="#4FE3FF"
+        android:pathData="M52.5,66 L55.5,66 L55.5,80 L52.5,80 Z" />
+    <path
+        android:fillColor="#4FE3FF"
+        android:pathData="M28,52.5 L42,52.5 L42,55.5 L28,55.5 Z" />
+    <path
+        android:fillColor="#4FE3FF"
+        android:pathData="M66,52.5 L80,52.5 L80,55.5 L66,55.5 Z" />
+    <path
+        android:fillColor="#FF5C5C"
+        android:pathData="M54,50.5 a3.5,3.5 0 1,0 0.01,0 z" />
+</vector>

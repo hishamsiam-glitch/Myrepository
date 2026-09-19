@@ -1,3 +1,18 @@
+# Myrepository
+
+Android apps built in this repository. Each one is self-contained and has a
+GitHub Actions workflow that builds an installable APK.
+
+| Project | Folder | What it is | APK |
+| --- | --- | --- | --- |
+| **Gyro Strike** | [`fps_game/`](fps_game/) | Landscape first-person shooter steered with the phone's motion sensors, with checkpoints and missions (Three.js in an Android WebView) | [fps-sideload-latest](https://github.com/hishamsiam-glitch/Myrepository/releases/tag/fps-sideload-latest) |
+| **Scientific Calculator** | [`app/`](app/) | Material 3 scientific calculator (Flutter) | [sideload-latest](https://github.com/hishamsiam-glitch/Myrepository/releases/tag/sideload-latest) |
+
+See [`fps_game/README.md`](fps_game/README.md) for the game's controls,
+gameplay and build notes. The rest of this file documents the calculator.
+
+---
+
 # Scientific Calculator
 
 A scientific calculator for Android, built with Flutter.
