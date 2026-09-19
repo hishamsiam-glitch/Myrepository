@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="Crate Quest: a crate-pushing puzzle game with 100 levels, from super easy to super hard.">
+  <title>Crate Quest</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Level select -->
+  <section id="screen-menu" class="screen">
+    <header class="menu-header">
+      <h1><span class="logo" aria-hidden="true"></span>Crate Quest</h1>
+      <p class="tagline">Push every crate onto a glowing pad. 100 levels, from a single push to brain-melting.</p>
+      <div class="progress-row">
+        <div class="progress-bar"><div id="progress-fill"></div></div>
+        <span id="progress-text">0 / 100</span>
+      </div>
+      <div class="menu-actions">
+        <button id="btn-continue" class="btn primary">Continue</button>
+        <button id="btn-sound" class="btn ghost" aria-pressed="true">Sound: on</button>
+        <button id="btn-reset-progress" class="btn ghost danger">Reset progress</button>
+      </div>
+    </header>
+    <div id="worlds"></div>
+    <footer class="menu-footer">
+      <p>Arrow keys / WASD or swipe to move. Tap a floor tile to walk there. Z undoes, R restarts.</p>
+    </footer>
+  </section>
+
+  <!-- Gameplay -->
+  <section id="screen-game" class="screen hidden">
+    <header class="hud">
+      <button id="btn-menu" class="btn icon" title="Back to levels (Esc)" aria-label="Back to levels">&#x2190;</button>
+      <div class="hud-title">
+        <div id="hud-level">Level 1</div>
+        <div id="hud-world" class="hud-sub">First Steps</div>
+      </div>
+      <div class="hud-stats">
+        <div><span class="stat-label">Moves</span><span id="hud-moves">0</span></div>
+        <div><span class="stat-label">Pushes</span><span id="hud-pushes">0</span></div>
+        <div><span class="stat-label">Best</span><span id="hud-best">&ndash;</span></div>
+      </div>
+    </header>
+
+    <div id="board-wrap">
+      <canvas id="board" aria-label="Puzzle board"></canvas>
+      <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <footer class="controls">
+      <div class="control-buttons">
+        <button id="btn-undo" class="btn" title="Undo (Z)">Undo</button>
+        <button id="btn-restart" class="btn" title="Restart (R)">Restart</button>
+        <button id="btn-solution" class="btn" title="Watch the solution">Solution</button>
+      </div>
+      <div class="dpad" id="dpad" aria-label="Direction pad">
+        <button data-dir="u" class="dpad-btn up" aria-label="Up">&#x25B2;</button>
+        <button data-dir="l" class="dpad-btn left" aria-label="Left">&#x25C0;</button>
+        <button data-dir="r" class="dpad-btn right" aria-label="Right">&#x25B6;</button>
+        <button data-dir="d" class="dpad-btn down" aria-label="Down">&#x25BC;</button>
+      </div>
+    </footer>
+  </section>
+
+  <!-- Win dialog -->
+  <div id="overlay-win" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="dialog">
+      <div class="dialog-badge" id="win-badge">&#x2605;</div>
+      <h2 id="win-title">Level complete!</h2>
+      <p id="win-stats"></p>
+      <p id="win-note" class="muted"></p>
+      <div class="dialog-actions">
+        <button id="btn-win-next" class="btn primary">Next level</button>
+        <button id="btn-win-replay" class="btn">Play again</button>
+        <button id="btn-win-menu" class="btn ghost">Levels</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Solution confirm -->
+  <div id="overlay-solution" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="dialog">
+      <h2>Watch the solution?</h2>
+      <p>The level restarts and plays an optimal solution. It will count as solved <em>with help</em>, and the next level unlocks.</p>
+      <div class="dialog-actions">
+        <button id="btn-solution-yes" class="btn primary">Show me</button>
+        <button id="btn-solution-no" class="btn ghost">Keep trying</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset confirm -->
+  <div id="overlay-reset" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="dialog">
+      <h2>Reset all progress?</h2>
+      <p>Every level will be locked again except the first. This cannot be undone.</p>
+      <div class="dialog-actions">
+        <button id="btn-reset-yes" class="btn danger">Reset</button>
+        <button id="btn-reset-no" class="btn ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="engine.js"></script>
+  <script src="levels.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,3 +1,16 @@
+# Myrepository
+
+Two Android apps live here:
+
+- **[Crate Quest](puzzle_game/README.md)** (`puzzle_game/`): a crate-pushing
+  puzzle game with 100 solver-verified levels, from super easy to super hard.
+  Plain HTML5/canvas, packaged as an Android WebView app. The APK is built by
+  CI and published as the `crate-quest-latest` GitHub Release.
+- **Scientific Calculator** (`app/`): a Flutter calculator, described below.
+  Its APK is published as the `sideload-latest` release.
+
+---
+
 # Scientific Calculator
 
 A scientific calculator for Android, built with Flutter.

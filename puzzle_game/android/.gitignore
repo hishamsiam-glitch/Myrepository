@@ -1,0 +1,12 @@
+# Release signing - never commit these (see key.properties.example)
+key.properties
+*.jks
+*.keystore
+
+# Build output / local state
+build/
+.gradle/
+local.properties
+.idea/
+*.iml
+.kotlin/
