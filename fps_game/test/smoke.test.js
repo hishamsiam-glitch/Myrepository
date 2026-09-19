@@ -58,6 +58,10 @@ async function main() {
     };
   });
   const page = await context.newPage();
+  if (process.env.SLOW) { // simulate a slow CI runner: SLOW=6 node test/smoke.test.js
+    const cdp = await context.newCDPSession(page);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: Number(process.env.SLOW) || 4 });
+  }
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
@@ -68,6 +72,12 @@ async function main() {
   const phase = () => G(() => GyroStrike.phase);
   const waitPhase = (p, timeout = 5000) => page.waitForFunction((pp) => GyroStrike.phase === pp, p, { timeout });
   const shot = (name) => page.screenshot({ path: path.join(__dirname, `screenshot-${name}.png`) });
+  // CI runners render slowly and the game clamps its time step, so checks
+  // wait for a condition to become true rather than for a fixed delay.
+  const waitFor = async (fn, arg, msg, timeout = 10000) => {
+    try { await page.waitForFunction(fn, arg, { timeout }); }
+    catch (e) { throw new assert.AssertionError({ message: `${msg} (timed out after ${timeout} ms)` }); }
+  };
 
   await page.goto(`http://127.0.0.1:${port}/?test=1`);
   await page.waitForFunction(() => window.GyroStrike && GyroStrike.phase === 'title');
@@ -92,43 +102,37 @@ async function main() {
 
   // ---- tilt forward -> walk forward (start faces +x) -------------------
   await setPose(pose({ tiltFwd: 20 }));
-  await page.waitForTimeout(1000);
+  await waitFor((x0) => GyroStrike.player.x - x0 > 3, p1.x, 'tilting forward should walk forward along +x');
   const p2 = await G(() => ({ x: GyroStrike.player.x, z: GyroStrike.player.z, mz: GyroStrike.input.state.moveZ }));
-  assert.ok(p2.x - p1.x > 3, `tilting forward should walk forward along +x (moved ${(p2.x - p1.x).toFixed(2)})`);
   assert.ok(Math.abs(p2.z - p1.z) < 0.5, 'no sideways drift while walking forward');
+  assert.ok(p2.mz > 0.8, `forward tilt of 20 deg should give (near) full speed (moveZ ${p2.mz.toFixed(2)})`);
   await shot('walking');
 
   // ---- tilt back -> walk backwards ------------------------------------
   await setPose(pose({ tiltFwd: -20 }));
-  await page.waitForTimeout(600);
-  const p3 = await G(() => GyroStrike.player.x);
-  assert.ok(p3 < p2.x - 1, 'tilting back should walk backwards');
+  await waitFor((x2) => GyroStrike.player.x < x2 - 1, p2.x, 'tilting back should walk backwards');
 
   // ---- turn the phone right 30 deg -> camera turns right ----------------
   await setPose(pose());
-  await page.waitForTimeout(200);
+  await waitFor(() => Math.abs(GyroStrike.input.state.moveZ) < 0.05, null, 'movement should stop in the neutral pose');
   const yaw0 = await G(() => GyroStrike.player.yaw);
   await setPose(pose({ turn: 30 }));
-  await page.waitForTimeout(200);
-  const yaw1 = await G(() => GyroStrike.player.yaw);
   const sens = await G(() => GyroStrike.settings.turnSens);
+  await waitFor((y0) => Math.abs(GyroStrike.player.yaw - y0) > 0.1, yaw0, 'turning the phone should turn the camera');
+  const yaw1 = await G(() => GyroStrike.player.yaw);
   assert.ok(Math.abs((yaw0 - yaw1) - rad(30) * sens) < 0.02, `turning the phone 30 deg right should turn the camera ${30 * sens} deg right (got ${((yaw0 - yaw1) * 180 / Math.PI).toFixed(1)})`);
 
   // ---- roll right edge down -> strafe right ------------------------------
   await setPose(pose({ turn: 30, rollRight: 15 }));
-  await page.waitForTimeout(400);
-  const mx = await G(() => GyroStrike.input.state.moveX);
-  assert.ok(mx > 0.4, `rolling the right edge down should strafe right (moveX ${mx.toFixed(2)})`);
+  await waitFor(() => GyroStrike.input.state.moveX > 0.4, null, 'rolling the right edge down should strafe right');
   await setPose(pose({ turn: 30 }));
+  await waitFor(() => Math.abs(GyroStrike.input.state.moveX) < 0.05, null, 'strafe should stop when level again');
 
   // ---- gyro scheme: tilt controls pitch ----------------------------------
-  await G(() => GyroStrike.setScheme('gyro'));
-  await G(() => GyroStrike.input.recenter());
-  await page.waitForTimeout(100);
+  await G(() => { GyroStrike.setScheme('gyro'); GyroStrike.input.recenter(); });
+  await waitFor(() => !GyroStrike.input.wantRecenter, null, 'recenter should apply on the next sample');
   await setPose(pose({ turn: 30, tiltFwd: -20 }));
-  await page.waitForTimeout(200);
-  const pitch = await G(() => GyroStrike.player.pitch);
-  assert.ok(Math.abs(pitch - rad(20)) < 0.03, `gyro scheme: tilting up should look up 20 deg (got ${(pitch * 180 / Math.PI).toFixed(1)})`);
+  await waitFor((target) => Math.abs(GyroStrike.player.pitch - target) < 0.03, rad(20), 'gyro scheme: tilting up should look up 20 deg');
   await setPose(pose({ turn: 30 }));
   await G(() => GyroStrike.setScheme('tilt'));
 
@@ -140,7 +144,7 @@ async function main() {
   });
   const ammo0 = await G(() => GyroStrike.state.ammo);
   await page.keyboard.down('Space');
-  await page.waitForTimeout(700);
+  await waitFor((a0) => GyroStrike.state.ammo <= a0 - 3, ammo0, 'holding fire should fire repeatedly');
   await page.keyboard.up('Space');
   await shot('shooting');
   const combat = await G(() => ({ ammo: GyroStrike.state.ammo, kills: GyroStrike.state.kills, score: GyroStrike.state.score, hits: GyroStrike.stats.hits, shots: GyroStrike.stats.shots }));
@@ -150,7 +154,7 @@ async function main() {
 
   // ---- checkpoint saves progress -----------------------------------------
   await teleport(18, 31);
-  await page.waitForTimeout(200);
+  await waitFor(() => GyroStrike.state.checkpoint === 1, null, 'walking through checkpoint 1 records it');
   const cp = await G(() => ({ cp: GyroStrike.state.checkpoint, saved: JSON.parse(localStorage.getItem('mock.gs.save.v1') || 'null') }));
   assert.strictEqual(cp.cp, 1, 'walking through checkpoint 1 records it');
   assert.ok(cp.saved && cp.saved.checkpoint === 1 && cp.saved.kills >= 1, 'save written through the bridge');
@@ -162,28 +166,29 @@ async function main() {
   assert.ok(/hangar/i.test(title), `hangar mission should trigger (got "${title}")`);
   await page.click('#btn-mission-go');
   await waitPhase('playing');
-  await page.waitForTimeout(200);
+  await waitFor(() => document.getElementById('mission').classList.contains('visible'), null, 'mission panel visible');
   await shot('hangar');
   const z3 = await G(() => GyroStrike.enemies.filter((e) => e.zone === 3).length);
   assert.strictEqual(z3, 6, 'hangar spawns its six hostiles');
   assert.ok(await G(() => document.getElementById('mission').classList.contains('visible')), 'mission panel visible');
   await G(() => GyroStrike.enemies.filter((e) => e.zone === 3).forEach((e) => e.hit(9999)));
-  await page.waitForTimeout(300);
+  await waitFor(() => GyroStrike.state.missionsDone.has('hangar'), null, 'hangar mission completes when all hostiles die');
   const afterHangar = await G(() => ({ done: [...GyroStrike.state.missionsDone], gates: [...GyroStrike.state.gatesOpen], mission: !!GyroStrike.activeMission, cleared: [...GyroStrike.state.clearedZones] }));
   assert.deepStrictEqual(afterHangar.done, ['hangar'], 'hangar mission completes when all hostiles die');
   assert.deepStrictEqual(afterHangar.gates, ['A'], 'gate A opens');
   assert.ok(!afterHangar.mission, 'mission panel closes');
   assert.ok(afterHangar.cleared.includes(3), 'zone 3 marked cleared');
-  await page.waitForTimeout(1600);
-  assert.ok(await G(() => !GyroStrike.level.solid[22 * GyroStrike.level.w + 23]), 'gate A cells become walkable');
+  await waitFor(() => !GyroStrike.level.solid[22 * GyroStrike.level.w + 23], null, 'gate A cells become walkable');
 
   // ---- storage mission: collect 3 cores within the time limit -------------
   await teleport(10, 14, 0);
   await waitPhase('mission');
   await page.click('#btn-mission-go');
   await waitPhase('playing');
-  for (const [x, y] of [[10, 16], [21, 10], [14, 12]]) { await teleport(x, y); await page.waitForTimeout(120); }
-  await page.waitForTimeout(200);
+  for (const [x, y] of [[10, 16], [21, 10], [14, 12]]) {
+    await teleport(x, y);
+    await waitFor(([cx, cy]) => GyroStrike.state.collected.has(GyroStrike.level.pickups.find((p) => p.x === cx && p.y === cy).id), [x, y], `core at (${x},${y}) collected`);
+  }
   const afterCores = await G(() => ({ done: [...GyroStrike.state.missionsDone], gates: [...GyroStrike.state.gatesOpen], collected: [...GyroStrike.state.collected] }));
   assert.ok(afterCores.done.includes('cores'), 'collecting all cores completes the mission');
   assert.ok(afterCores.gates.includes('B'), 'gate B opens');
@@ -191,8 +196,7 @@ async function main() {
 
   // ---- race mission fails on timeout -> retry from checkpoint -------------
   await teleport(26, 13); // checkpoint 6 (saves the two completed missions)
-  await page.waitForTimeout(200);
-  assert.strictEqual(await G(() => GyroStrike.state.checkpoint), 6);
+  await waitFor(() => GyroStrike.state.checkpoint === 6, null, 'checkpoint 6 records');
   await teleport(32, 13, 0);
   await waitPhase('mission');
   await page.click('#btn-mission-go');
@@ -229,8 +233,7 @@ async function main() {
   await page.click('#btn-mission-go');
   await waitPhase('playing');
   await teleport(27, 4);
-  await page.waitForTimeout(200);
-  assert.ok(await G(() => GyroStrike.state.missionsDone.has('relay')), 'reaching the relay completes the race');
+  await waitFor(() => GyroStrike.state.missionsDone.has('relay'), null, 'reaching the relay completes the race');
 
   // ---- death and respawn -----------------------------------------------
   await G(() => { GyroStrike.godMode = false; GyroStrike.hurt(500); });
@@ -247,11 +250,9 @@ async function main() {
   await waitPhase('mission');
   await page.click('#btn-mission-go');
   await waitPhase('playing');
-  await page.waitForTimeout(300);
-  assert.ok(await G(() => GyroStrike.enemies.some((e) => e.zone === 8)), 'hold-out spawns a wave immediately');
+  await waitFor(() => GyroStrike.enemies.some((e) => e.zone === 8), null, 'hold-out spawns a wave immediately');
   await G(() => { GyroStrike.activeMission.time = 44.9; });
-  await page.waitForTimeout(300);
-  assert.ok(await G(() => GyroStrike.beaconOnline), 'surviving brings the beacon online');
+  await waitFor(() => GyroStrike.beaconOnline, null, 'surviving brings the beacon online');
   await teleport(3, 4);
   await waitPhase('win');
   await page.waitForSelector('#screen-win.visible', { timeout: 3000 });
@@ -265,7 +266,7 @@ async function main() {
   assert.strictEqual(await G(() => GyroStrike.onBackButton()), true);
   assert.strictEqual(await phase(), 'paused');
   await page.click('#btn-resume');
-  assert.strictEqual(await phase(), 'playing');
+  await waitPhase('playing');
 
   assert.deepStrictEqual(errors, [], 'no page errors expected');
   await browser.close();
