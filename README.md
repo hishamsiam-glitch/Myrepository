@@ -4,8 +4,9 @@ A scientific calculator for Android, built with Flutter.
 
 > This repository also contains **Skyline Heli**, a tilt-controlled
 > helicopter game for phones, in [`helicopter_game/`](helicopter_game/).
-> It is a standalone HTML5 page that is published to GitHub Pages by the
-> `Helicopter game` workflow.
+> It is a standalone HTML5 page that the `Helicopter game` workflow
+> publishes to GitHub Pages and also builds into a sideloadable Android
+> APK (release `heli-sideload-latest`).
 
 <p>
   <img src="app/store_assets/screenshots/01_scientific_light.png" width="220" alt="Scientific mode, light theme">

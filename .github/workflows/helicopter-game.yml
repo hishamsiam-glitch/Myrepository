@@ -28,6 +28,47 @@ jobs:
           path: helicopter_game/test/screenshot-*.png
           if-no-files-found: ignore
 
+  # Build the Android wrapper app (helicopter_game/android) and publish the
+  # debug-signed APK as a GitHub Release asset for sideloading, the same
+  # way the calculator workflow does.
+  apk:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: helicopter_game/android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.11.1"
+      - run: gradle assembleRelease --no-daemon
+      - name: Rename APK
+        run: cp app/build/outputs/apk/release/app-release.apk skyline-heli.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: skyline-heli-apk
+          path: helicopter_game/android/skyline-heli.apk
+      - name: Publish sideload release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete heli-sideload-latest --yes --repo "$GITHUB_REPOSITORY" || true
+          git push origin :refs/tags/heli-sideload-latest || true
+          gh release create heli-sideload-latest \
+            skyline-heli.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Skyline Heli APK (debug-signed, sideload)" \
+            --notes "Automated debug-signed APK of the Skyline Heli helicopter game for sideloading/testing only - not suitable for Play Store submission. Requires Android 8.0+. Built from commit ${{ github.sha }}." \
+            --target "${{ github.sha }}"
+
   # Publish the game to GitHub Pages so it can be opened on a phone by URL:
   # https://<owner>.github.io/<repo>/
   # Pages must be enabled once by the repository owner (Settings -> Pages

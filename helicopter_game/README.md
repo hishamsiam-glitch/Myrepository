@@ -41,6 +41,31 @@ on the screen to steer, or use the arrow keys / WASD with space to fly.
 Every run generates a fresh world. Add `?seed=<number>` to the URL to
 replay a specific one.
 
+## Android APK
+
+`android/` is a small native Android app that bundles the game in a
+full-screen WebView. The `Helicopter game` workflow builds it on every
+push and publishes the APK as a GitHub Release named
+**heli-sideload-latest**:
+
+https://github.com/hishamsiam-glitch/Myrepository/releases/tag/heli-sideload-latest
+
+Download `skyline-heli.apk` on the phone, open it, and allow installs from
+your browser when asked. It is debug-signed (fine for sideloading, not for
+the Play Store) and needs Android 8.0 or newer. The tilt sensors need no
+permission on Android.
+
+To build it yourself, with the Android SDK installed:
+
+```bash
+cd helicopter_game/android
+gradle assembleRelease   # or ./gradlew if you add a wrapper
+# -> app/build/outputs/apk/release/app-release.apk
+```
+
+The web files are copied into the APK at build time, so there is a single
+source for both the web and Android versions.
+
 ## Running it
 
 Any static file server works, for example:
@@ -93,4 +118,5 @@ js/audio.js      Synthesised rotor hum and effect sounds (WebAudio)
 js/heli.js       Helicopter sprite + shadow
 js/game.js       Physics, camera, rendering, HUD, screens
 test/            Playwright smoke test
+android/         Android WebView wrapper app (builds the sideload APK)
 ```

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Top-down helicopter on a sky-blue disc (108dp adaptive foreground). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#2E6FB5"
+        android:pathData="M54,26 a28,28 0 1,0 0.01,0 z" />
+    <!-- tail boom + fin -->
+    <path
+        android:fillColor="#B0341F"
+        android:pathData="M51.5,58 L56.5,58 L55.5,80 L52.5,80 Z" />
+    <path
+        android:fillColor="#E8E2D5"
+        android:pathData="M52,76 L62,76 L62,79 L52,79 Z" />
+    <!-- fuselage -->
+    <path
+        android:fillColor="#D63F26"
+        android:pathData="M54,38 a8,14 0 1,0 0.01,0 z" />
+    <!-- cockpit glass -->
+    <path
+        android:fillColor="#9FD7F5"
+        android:pathData="M54,39 a5,5.5 0 1,0 0.01,0 z" />
+    <!-- rotor blades -->
+    <path
+        android:fillColor="#222222"
+        android:pathData="M53,28 L55,28 L55,76 L53,76 Z" />
+    <path
+        android:fillColor="#222222"
+        android:pathData="M30,51 L78,51 L78,53 L30,53 Z" />
+    <path
+        android:fillColor="#222222"
+        android:pathData="M54,49.5 a2.5,2.5 0 1,0 0.01,0 z" />
+</vector>
