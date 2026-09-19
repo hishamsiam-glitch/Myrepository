@@ -1,0 +1,56 @@
+name: Helicopter game
+
+on:
+  push:
+    paths:
+      - "helicopter_game/**"
+      - ".github/workflows/helicopter-game.yml"
+  workflow_dispatch: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: helicopter_game
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: helicopter-game-screenshots
+          path: helicopter_game/test/screenshot-*.png
+          if-no-files-found: ignore
+
+  # Publish the game to GitHub Pages so it can be opened on a phone by URL:
+  # https://<owner>.github.io/<repo>/
+  # Pages must be enabled once in the repository settings (Settings ->
+  # Pages -> Source: GitHub Actions); the configure-pages step below also
+  # tries to enable it automatically.
+  deploy:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: helicopter_game
+      - id: deployment
+        uses: actions/deploy-pages@v4
