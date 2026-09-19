@@ -49,6 +49,9 @@ tasks.register("copyWebAssets", Copy) {
 preBuild.dependsOn("copyWebAssets")
 
 dependencies {
+    // AndroidX pulls in mismatched kotlin-stdlib / kotlin-stdlib-jdk8
+    // versions; the BOM aligns them so the duplicate-class check passes.
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.22"))
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.webkit:webkit:1.12.1")
 }
