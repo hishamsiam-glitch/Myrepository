@@ -109,6 +109,39 @@ async function main() {
   await page.click('#btn-restart');
   await page.waitForFunction(() => HeliGame.phase === 'playing');
 
+  // Gravity-vector input with the phone held upright in portrait: the
+  // orientation-angle path would be unstable here, the motion path is not.
+  await page.evaluate(() => HeliGame.input.calibrate());
+  await page.evaluate(() => HeliGame.input.injectMotion(0, 9.8, 0)); // upright = neutral
+  await page.evaluate(() => {
+    const c = document.getElementById('game');
+    c.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 2, pointerType: 'touch', clientX: 200, clientY: 500, bubbles: true, isPrimary: true }));
+  });
+  await page.waitForTimeout(400);
+  const hA = await page.evaluate(() => HeliGame.heli.heading);
+  await page.evaluate(() => HeliGame.input.injectMotion(-3.4, 9.2, 0)); // right edge down ~20 deg
+  await page.waitForTimeout(800);
+  const hB = await page.evaluate(() => HeliGame.heli.heading);
+  assert.ok(hB - hA > 0.3, `upright roll should turn right via the motion sensor (${hA} -> ${hB})`);
+  const steerRoll = await page.evaluate(() => HeliGame.input.state.rawRoll);
+  assert.ok(Math.abs(steerRoll - 20.3) < 1, `roll angle from gravity should be ~20 deg (got ${steerRoll})`);
+
+  // Once motion events flow, orientation-angle events are ignored.
+  await page.evaluate(() => HeliGame.input.injectOrientation(45, -80));
+  const stillRoll = await page.evaluate(() => HeliGame.input.state.rawRoll);
+  assert.ok(Math.abs(stillRoll - steerRoll) < 0.001, 'orientation events must not override motion input');
+
+  // Tipping the top of the phone away (towards flat) descends.
+  await page.evaluate(() => HeliGame.input.injectMotion(0, 8, 5.7));
+  const altA = await page.evaluate(() => HeliGame.heli.alt);
+  await page.waitForTimeout(800);
+  const altB = await page.evaluate(() => HeliGame.heli.alt);
+  assert.ok(altB < altA - 8, `tipping the phone away should descend (${altA} -> ${altB})`);
+  await page.evaluate(() => {
+    const c = document.getElementById('game');
+    c.dispatchEvent(new PointerEvent('pointerup', { pointerId: 2, pointerType: 'touch', bubbles: true }));
+  });
+
   // The terrain generator produces every biome within a few km of spawn.
   const biomes = await page.evaluate(() => {
     const w = HeliGame.world;

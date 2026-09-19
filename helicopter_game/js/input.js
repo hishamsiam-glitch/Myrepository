@@ -1,5 +1,12 @@
-/* Input: phone tilt (DeviceOrientation) for steering, a held finger for
- * throttle, plus keyboard / drag fallbacks for devices without sensors.
+/* Input: phone tilt for steering, a held finger for throttle, plus
+ * keyboard / drag fallbacks for devices without sensors.
+ *
+ * Tilt is read from the gravity vector (DeviceMotion's
+ * accelerationIncludingGravity), which stays continuous however the phone
+ * is held: flat on a table, angled in the lap, or upright in portrait.
+ * The Euler angles from DeviceOrientation are only a fallback, because
+ * gamma flips sign when the phone passes vertical and makes steering
+ * erratic when holding the phone upright.
  *
  * Outputs (read each frame via `state`):
  *   steer   -1..1   roll tilt  -> turn left / right
@@ -45,18 +52,10 @@
       return 0;
     }
 
-    function onOrientation(ev) {
-      if (ev.beta == null || ev.gamma == null) return;
-      const beta = ev.beta;
-      const gamma = ev.gamma;
-      let roll;
-      let pitch;
-      switch (((screenAngle() % 360) + 360) % 360) {
-        case 90: roll = beta; pitch = -gamma; break;
-        case 180: roll = -gamma; pitch = -beta; break;
-        case 270: roll = -beta; pitch = gamma; break;
-        default: roll = gamma; pitch = beta; break;
-      }
+    let motionSeen = false;
+
+    // Apply a measured roll / pitch (degrees, screen frame) as the new input.
+    function applyTilt(roll, pitch) {
       state.rawRoll = roll;
       state.rawPitch = pitch;
       lastEventTime = performance.now();
@@ -70,13 +69,60 @@
         wantCalibrate = false;
         state.calibrated = true;
       }
-      state.roll = roll - neutralRoll;
-      state.pitch = pitch - neutralPitch;
-      // Keep small angles clean and clamp wrap-around jumps.
-      state.roll = clamp(state.roll, -90, 90);
-      state.pitch = clamp(state.pitch, -90, 90);
+      let dr = roll - neutralRoll;
+      let dp = pitch - neutralPitch;
+      // Pitch is an angle around a full circle; take the short way round.
+      if (dp > 180) dp -= 360;
+      if (dp < -180) dp += 360;
+      state.roll = clamp(dr, -90, 90);
+      state.pitch = clamp(dp, -90, 90);
       targetSteer = axis(state.roll, opts.steerRange);
       targetClimb = axis(state.pitch, opts.climbRange) * (opts.invertPitch ? -1 : 1);
+    }
+
+    // Rotate a device-frame (x, y) vector into the screen frame so the game
+    // plays the same in portrait and landscape.
+    function toScreenFrame(x, y) {
+      switch (((screenAngle() % 360) + 360) % 360) {
+        case 90: return [-y, x];
+        case 180: return [-x, -y];
+        case 270: return [y, -x];
+        default: return [x, y];
+      }
+    }
+
+    // Preferred path: gravity vector. Device at rest lying flat reports
+    // (0, 0, +g); upright in portrait reports (0, +g, 0).
+    function onMotion(ev) {
+      const a = ev.accelerationIncludingGravity;
+      if (!a || a.x == null || a.y == null || a.z == null) return;
+      const g = Math.hypot(a.x, a.y, a.z);
+      if (g < 1) return;
+      const [sx, sy] = toScreenFrame(a.x, a.y);
+      // Right edge down -> the "up" vector leans towards the left edge
+      // (negative x), so negate to get positive = tilted right.
+      const roll = -Math.asin(clamp(sx / g, -1, 1)) * 180 / Math.PI;
+      // 0 when flat, 90 when upright, continuous in between and beyond.
+      const pitch = Math.atan2(sy, a.z) * 180 / Math.PI;
+      motionSeen = true;
+      applyTilt(roll, pitch);
+    }
+
+    // Fallback path: Euler angles, used only until motion events arrive.
+    function onOrientation(ev) {
+      if (motionSeen) return;
+      if (ev.beta == null || ev.gamma == null) return;
+      const beta = ev.beta;
+      const gamma = ev.gamma;
+      let roll;
+      let pitch;
+      switch (((screenAngle() % 360) + 360) % 360) {
+        case 90: roll = beta; pitch = -gamma; break;
+        case 180: roll = -gamma; pitch = -beta; break;
+        case 270: roll = -beta; pitch = gamma; break;
+        default: roll = gamma; pitch = beta; break;
+      }
+      applyTilt(roll, pitch);
     }
 
     function axis(deg, range) {
@@ -89,17 +135,24 @@
     // On iOS 13+ orientation events require an explicit permission prompt,
     // which must be triggered from a user gesture (the Start button).
     async function requestSensors() {
+      const DME = global.DeviceMotionEvent;
       const DOE = global.DeviceOrientationEvent;
-      if (DOE && typeof DOE.requestPermission === 'function') {
-        try {
-          const res = await DOE.requestPermission();
-          if (res !== 'granted') return false;
-        } catch (e) {
-          return false;
-        }
+      let granted = false;
+      if (DME && typeof DME.requestPermission === 'function') {
+        try { granted = (await DME.requestPermission()) === 'granted'; } catch (e) { granted = false; }
+      } else if (DME) {
+        granted = true;
       }
-      global.addEventListener('deviceorientation', onOrientation, true);
-      return true;
+      if (granted) global.addEventListener('devicemotion', onMotion, true);
+
+      let orientGranted = false;
+      if (DOE && typeof DOE.requestPermission === 'function') {
+        try { orientGranted = (await DOE.requestPermission()) === 'granted'; } catch (e) { orientGranted = false; }
+      } else if (DOE) {
+        orientGranted = true;
+      }
+      if (orientGranted) global.addEventListener('deviceorientation', onOrientation, true);
+      return granted || orientGranted;
     }
 
     function calibrate() {
@@ -178,10 +231,11 @@
 
     function setOptions(o) { Object.assign(opts, o); }
 
-    // Test hook: feed orientation values without a real sensor.
+    // Test hooks: feed sensor values without real hardware.
     function injectOrientation(beta, gamma) { onOrientation({ beta, gamma }); }
+    function injectMotion(x, y, z) { onMotion({ accelerationIncludingGravity: { x, y, z } }); }
 
-    return { state, update, requestSensors, calibrate, setOptions, injectOrientation, opts };
+    return { state, update, requestSensors, calibrate, setOptions, injectOrientation, injectMotion, opts };
   }
 
   global.createInput = createInput;

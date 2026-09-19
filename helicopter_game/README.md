@@ -19,6 +19,10 @@ and can be added to the home screen as a web app.
 | Reset neutral tilt | Tap the &#x27F3; button (or press `c`). The pose you hold when tapping Start is the initial neutral. |
 | Pause | Tap &#x23F8; (or `p` / `Esc`). The game also pauses when the tab is hidden. |
 
+Tilt is read from the phone's gravity vector, so it works however you hold
+the phone in portrait: upright in front of you, angled in your lap, or flat.
+The pose you hold when tapping Start is neutral.
+
 Without a tilt sensor (desktop, or permission denied on iOS) you can drag
 on the screen to steer, or use the arrow keys / WASD with space to fly.
 
