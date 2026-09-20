@@ -81,5 +81,7 @@ scores.js             High-score table, score log, settings persistence
 input.js              Phone sensors, touch and keyboard input
 audio.js              WebAudio synthesised sound effects
 vendor/three.module.js  Three.js r170 (MIT, see THREE-LICENSE.txt)
+fonts/                Press Start 2P (SIL OFL 1.1)
+android/              Android wrapper app (WebView) that builds the APK
 manifest.webmanifest  PWA manifest (fullscreen, portrait)
 ```

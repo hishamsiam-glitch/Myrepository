@@ -1,0 +1,6 @@
+# Copy to key.properties (git-ignored) to sign release builds with your
+# own upload key. See ../../docs/PLAY_STORE_RELEASE.md for how to create it.
+storePassword=your-store-password
+keyPassword=your-key-password
+keyAlias=upload
+storeFile=upload-keystore.jks
