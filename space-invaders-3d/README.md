@@ -3,7 +3,31 @@
 A 100-level 3D take on the arcade classic, steered by tilting your phone.
 Pure web: one folder of static files, no build step, no server code.
 
-## Play it
+## Android APK
+
+The `Build Space Invaders 3D APK` workflow (`.github/workflows/build-game-apk.yml`)
+builds a native Android app that wraps the game in a full-screen WebView
+and publishes it on the repository's **Releases** page as
+`space-invaders-3d-latest` → `space-invaders-3d.apk`.
+
+To install: open the Releases page on your phone, download the APK, allow
+installs from your browser when Android asks, and open it. The app needs no
+permissions and never uses the network; tilt controls work immediately
+(Android WebView needs no sensor permission prompt).
+
+The APK is debug-signed unless the `UPLOAD_KEYSTORE_BASE64` / `UPLOAD_*`
+secrets used by the calculator build are set, in which case it is signed
+with the same upload key. The Android project is in `android/`; the game
+files are copied into its assets at build time, so there is one source for
+both the web and Android versions. To build locally with the Android SDK
+installed:
+
+```bash
+cd space-invaders-3d/android
+./gradlew assembleRelease     # -> app/build/outputs/apk/release/app-release.apk
+```
+
+## Play it in a browser
 
 The game must be served over **HTTPS** (or `localhost`) because browsers
 only expose the orientation sensors on secure pages.
