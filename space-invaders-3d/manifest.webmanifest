@@ -1,0 +1,11 @@
+{
+  "name": "Space Invaders 3D",
+  "short_name": "Invaders 3D",
+  "description": "100-level 3D Space Invaders steered by tilting your phone.",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#04030f",
+  "theme_color": "#04030f",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

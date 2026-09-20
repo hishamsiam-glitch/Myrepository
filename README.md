@@ -1,5 +1,10 @@
 # Scientific Calculator
 
+> Also in this repository: **[Space Invaders 3D](space-invaders-3d/)** – a
+> 100-level 3D arcade game with a high-score table and score log, steered by
+> tilting your phone. It is a static web page; see its README for how to
+> play it and how to publish it with GitHub Pages.
+
 A scientific calculator for Android, built with Flutter.
 
 <p>
@@ -34,6 +39,7 @@ app/                          Flutter application
     generate_screenshots.dart Regenerates the Play Store screenshots
   android/                   Android platform project (Gradle, manifest, icons)
 store_assets/                Play Store icon + feature graphic
+space-invaders-3d/           Space Invaders 3D web game (Three.js, phone tilt controls)
 docs/
   PLAY_STORE_RELEASE.md     Step-by-step guide to build, sign, and publish
   STORE_LISTING.md          Ready-to-paste store listing copy

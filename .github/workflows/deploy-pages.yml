@@ -1,0 +1,40 @@
+name: Deploy Space Invaders 3D
+
+# Publishes the space-invaders-3d/ folder to GitHub Pages. Pages must be
+# enabled once in the repository settings with Source = "GitHub Actions"
+# (Settings -> Pages -> Build and deployment).
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - claude/android-calculator-play-store-ulhzmu
+    paths:
+      - "space-invaders-3d/**"
+      - ".github/workflows/deploy-pages.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: space-invaders-3d
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#04030f">
+  <meta name="description" content="Space Invaders 3D: 100 levels, arcade high-score table and score log, steered by tilting your phone.">
+  <title>Space Invaders 3D</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div id="touch" class="hidden"></div>
+  <div id="popups"></div>
+
+  <!-- In-game HUD -->
+  <div id="hud" class="hidden">
+    <div class="hud-row">
+      <div class="hud-block">
+        <div class="hud-label">SCORE</div>
+        <div id="hud-score" class="hud-value">000000</div>
+        <div id="hud-lives" class="hud-lives">▲▲▲</div>
+      </div>
+      <div class="hud-block center">
+        <div class="hud-label">HI-SCORE</div>
+        <div id="hud-hi" class="hud-value">000000</div>
+      </div>
+      <div class="hud-block right">
+        <div class="hud-label">LEVEL</div>
+        <div id="hud-level" class="hud-value">LV 001</div>
+      </div>
+    </div>
+    <div id="boss-bar" class="hidden"><div id="boss-fill"></div><span>BOSS</span></div>
+    <div class="hud-bottom">
+      <button class="hud-btn" data-action="pause" aria-label="Pause">❚❚</button>
+      <button id="btn-calib" class="hud-btn hidden" data-action="calibrate" aria-label="Calibrate tilt">⌖ CENTRE</button>
+    </div>
+  </div>
+
+  <div id="banner" class="hidden">
+    <div id="banner-title"></div>
+    <div id="banner-sub"></div>
+  </div>
+
+  <!-- Title -->
+  <section class="screen" data-screen="title">
+    <div class="panel">
+      <h1 class="logo"><span>SPACE</span><span>INVADERS</span><span class="three-d">3D</span></h1>
+      <div class="hi">HI-SCORE <span id="title-hi">000000</span></div>
+      <div class="menu">
+        <button class="btn primary" data-action="start">START · LEVEL 001</button>
+        <button id="btn-continue" class="btn hidden" data-action="continue">CONTINUE</button>
+        <button id="btn-sensors" class="btn accent" data-action="sensors">ENABLE TILT CONTROLS</button>
+        <div id="sensor-status" class="status">TILT YOUR PHONE TO STEER · TAP TO FIRE</div>
+        <div class="row">
+          <button class="btn" data-action="scores">HIGH SCORES</button>
+          <button class="btn" data-action="log">SCORE LOG</button>
+        </div>
+        <div class="row">
+          <button class="btn" data-action="settings">SETTINGS</button>
+          <button class="btn" data-action="help">HOW TO PLAY</button>
+        </div>
+        <div class="row">
+          <button class="btn" data-action="levels">100 LEVELS</button>
+          <button class="btn" data-action="fullscreen">FULLSCREEN</button>
+        </div>
+      </div>
+      <table class="points">
+        <tr><td class="inv a">▞▚</td><td>SQUID</td><td class="num">30 PTS</td><td class="inv d">▛▜</td><td>ARMOURED</td><td class="num">40 PTS</td></tr>
+        <tr><td class="inv b">▙▟</td><td>CRAB</td><td class="num">20 PTS</td><td class="inv e">▚▞</td><td>PHANTOM</td><td class="num">60 PTS</td></tr>
+        <tr><td class="inv c">▟▙</td><td>OCTOPUS</td><td class="num">10 PTS</td><td class="inv u">◠◡</td><td>MYSTERY</td><td class="num">?? PTS</td></tr>
+      </table>
+      <div class="foot">× SECTOR MULTIPLIER · BOSS EVERY 10 LEVELS · EXTRA SHIP AT 20,000</div>
+    </div>
+  </section>
+
+  <!-- High scores -->
+  <section class="screen hidden" data-screen="scores">
+    <div class="panel">
+      <h2>HIGH SCORES</h2>
+      <table class="table">
+        <thead><tr><th>RANK</th><th>NAME</th><th class="num">SCORE</th><th class="num">LVL</th><th>DATE</th></tr></thead>
+        <tbody id="hs-body"></tbody>
+      </table>
+      <button class="btn primary" data-action="back">BACK</button>
+    </div>
+  </section>
+
+  <!-- Score log -->
+  <section class="screen hidden" data-screen="log">
+    <div class="panel wide">
+      <h2>SCORE LOG</h2>
+      <div id="log-stats" class="status"></div>
+      <div class="scroll">
+        <table class="table">
+          <thead><tr><th>#</th><th>DATE</th><th class="num">SCORE</th><th class="num">LVL</th><th class="num">KILLS</th><th class="num">TIME</th><th>RESULT</th></tr></thead>
+          <tbody id="log-body"></tbody>
+        </table>
+      </div>
+      <div class="row">
+        <button class="btn primary" data-action="back">BACK</button>
+        <button class="btn danger" data-action="clear-log">ERASE ALL</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Settings -->
+  <section class="screen hidden" data-screen="settings">
+    <div class="panel">
+      <h2>SETTINGS</h2>
+      <div class="setting"><span>SOUND</span><button id="set-sound" class="btn toggle" data-action="toggle" data-key="sound">ON</button></div>
+      <div class="setting"><span>AUTO FIRE (HOLD)</span><button id="set-autofire" class="btn toggle" data-action="toggle" data-key="autofire">ON</button></div>
+      <div class="setting"><span>INVERT TILT</span><button id="set-invert" class="btn toggle" data-action="toggle" data-key="invert">OFF</button></div>
+      <div class="setting"><span>TILT FWD/BACK MOVES SHIP</span><button id="set-fb" class="btn toggle" data-action="toggle" data-key="forwardBack">ON</button></div>
+      <div class="setting"><span>TILT SENSITIVITY <b id="sens-val">3</b></span><input id="set-sens" type="range" min="1" max="5" step="1" value="3"></div>
+      <div class="row">
+        <button class="btn" data-action="calibrate">SET TILT CENTRE</button>
+        <button class="btn primary" data-action="back">BACK</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Help -->
+  <section class="screen hidden" data-screen="help">
+    <div class="panel">
+      <h2>HOW TO PLAY</h2>
+      <div class="help">
+        <p><b>PHONE</b> — tap ENABLE TILT CONTROLS, hold the phone comfortably, then tilt left / right to steer. Tilt forward / back to move the ship up and down the lane. Tap the screen to fire; hold to keep firing. Use ⌖ CENTRE to re-calibrate.</p>
+        <p><b>NO SENSORS?</b> — drag a finger across the screen to steer, tap to fire.</p>
+        <p><b>KEYBOARD</b> — ← → or A / D steer, ↑ ↓ or W / S move in depth, SPACE fires, P pauses.</p>
+        <p><b>GOAL</b> — clear all 100 levels. The invaders speed up as their numbers thin, drop closer every time they touch a side, and win if they reach your lane. A boss saucer guards every 10th level. Armoured (2 hits) and phantom (3 hits) invaders appear in later sectors.</p>
+        <p><b>SCORE</b> — points are multiplied by the sector number (levels 1-10 ×1 … 91-100 ×10). Every game is written to the score log; the top ten enter the high-score table with your three initials, just like the arcade.</p>
+      </div>
+      <button class="btn primary" data-action="back">BACK</button>
+    </div>
+  </section>
+
+  <!-- Level table -->
+  <section class="screen hidden" data-screen="levels">
+    <div class="panel wide">
+      <h2>100 LEVELS</h2>
+      <div class="scroll">
+        <table class="table">
+          <thead><tr><th>LVL</th><th>SECTOR</th><th class="num">MULT</th><th>FORMATION</th><th class="num">SPEED</th><th class="num">SHIELDS</th></tr></thead>
+          <tbody id="level-table"></tbody>
+        </table>
+      </div>
+      <button class="btn primary" data-action="back">BACK</button>
+    </div>
+  </section>
+
+  <!-- Pause -->
+  <section class="screen hidden" data-screen="pause">
+    <div class="panel small">
+      <h2>PAUSED</h2>
+      <button class="btn primary" data-action="resume">RESUME</button>
+      <button class="btn" data-action="calibrate">SET TILT CENTRE</button>
+      <button class="btn danger" data-action="quit">QUIT TO TITLE</button>
+    </div>
+  </section>
+
+  <!-- Name entry -->
+  <section class="screen hidden" data-screen="name">
+    <div class="panel small">
+      <h2>NEW HIGH SCORE</h2>
+      <div id="name-score" class="big-score">000000</div>
+      <div id="name-rank" class="status">RANK 1</div>
+      <div class="status">ENTER YOUR INITIALS</div>
+      <div class="letters">
+        <div class="letter-col"><button class="btn sm" data-action="letter" data-idx="0" data-dir="1">▲</button><div id="nl0" class="letter active">A</div><button class="btn sm" data-action="letter" data-idx="0" data-dir="-1">▼</button></div>
+        <div class="letter-col"><button class="btn sm" data-action="letter" data-idx="1" data-dir="1">▲</button><div id="nl1" class="letter">A</div><button class="btn sm" data-action="letter" data-idx="1" data-dir="-1">▼</button></div>
+        <div class="letter-col"><button class="btn sm" data-action="letter" data-idx="2" data-dir="1">▲</button><div id="nl2" class="letter">A</div><button class="btn sm" data-action="letter" data-idx="2" data-dir="-1">▼</button></div>
+      </div>
+      <button class="btn primary" data-action="name-ok">OK</button>
+    </div>
+  </section>
+
+  <div id="webgl-error" class="hidden">
+    <div class="panel small"><h2>NO WEBGL</h2><p class="status">This browser cannot render 3D graphics. Try a recent Chrome, Safari or Firefox.</p></div>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
