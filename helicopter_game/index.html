@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1b2a3a">
+  <title>Skyline Heli</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%231b2a3a'/%3E%3Cellipse cx='32' cy='32' rx='9' ry='17' fill='%23d63f26'/%3E%3Crect x='30' y='4' width='4' height='56' fill='%23222'/%3E%3Crect x='4' y='30' width='56' height='4' fill='%23222'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="hud" class="hidden">
+    <div class="hud-top-left">
+      <div class="score-box">
+        <div class="label">SCORE</div>
+        <div id="score" class="big">0</div>
+        <div id="dist" class="small">0.00 km</div>
+      </div>
+      <div class="fuel-box">
+        <div class="label">FUEL <span id="fuel-text">100%</span></div>
+        <div class="bar"><div id="fuel-bar" class="fill"></div></div>
+      </div>
+    </div>
+
+    <div class="hud-top-right">
+      <div class="alt-box">
+        <div class="label">ALT</div>
+        <div id="alt-gauge">
+          <div id="alt-ground"></div>
+          <div id="alt-marker"></div>
+        </div>
+        <div id="alt-text" class="small">40</div>
+      </div>
+    </div>
+
+    <div class="hud-buttons">
+      <button id="btn-calib" class="icon-btn" title="Reset neutral tilt (c)">&#x27F3;</button>
+      <button id="btn-sound" class="icon-btn" title="Sound">&#x1F50A;</button>
+      <button id="btn-pause" class="icon-btn" title="Pause (p)">&#x23F8;</button>
+    </div>
+
+    <div id="warn" class="hidden"></div>
+    <div id="flash" class="hidden"></div>
+
+    <div class="hud-bottom">
+      <div id="tilt"><div id="tilt-dot"></div></div>
+      <div class="bottom-text">
+        <div id="biome">Grassland</div>
+        <div id="speed" class="small">0 km/h</div>
+        <div id="sensor-note" class="small"></div>
+      </div>
+    </div>
+    <div id="hint" class="hidden">Hold a finger on the screen to fly</div>
+  </div>
+
+  <div id="start" class="overlay">
+    <div class="panel">
+      <h1>Skyline Heli</h1>
+      <p class="tagline">Fly over oceans, forests, deserts and mountain ranges.</p>
+      <ul class="howto">
+        <li><b>Hold</b> a finger anywhere on the screen to move forward. Lift it to hover.</li>
+        <li><b>Tilt</b> your phone left / right to turn.</li>
+        <li><b>Tip</b> the top of the phone away to descend, towards you to climb.</li>
+        <li>Stay above the ground: the <b>ALT</b> gauge shows terrain height under you.</li>
+        <li>Fly low over <b>fuel cans</b> to refuel; pass through <b>rings</b> at their altitude for points.</li>
+      </ul>
+      <div class="options">
+        <label><input type="checkbox" id="opt-invert"> Invert pitch</label>
+        <label>Tilt sensitivity <input type="range" id="opt-sens" min="1" max="10" value="5"></label>
+      </div>
+      <p class="small">Hold the phone in portrait however is comfortable (upright, angled or flat), then tap Start: that pose becomes neutral. Press &#x27F3; in game to reset it. Best: <span id="best">0</span></p>
+      <button id="btn-start" class="primary">Start</button>
+      <p class="small dim">No tilt sensor? Drag on the screen to steer, or use arrow keys + space.</p>
+    </div>
+  </div>
+
+  <div id="paused" class="overlay hidden">
+    <div class="panel">
+      <h2>Paused</h2>
+      <button id="btn-resume" class="primary">Resume</button>
+    </div>
+  </div>
+
+  <div id="over" class="overlay hidden">
+    <div class="panel">
+      <h2 id="over-reason">Crashed</h2>
+      <div class="stats">
+        <div><span class="label">Score</span><span id="over-score">0</span></div>
+        <div><span class="label">Distance</span><span id="over-dist">0 km</span></div>
+        <div><span class="label">Fuel cans</span><span id="over-fuel">0</span></div>
+        <div><span class="label">Rings</span><span id="over-rings">0</span></div>
+        <div><span class="label">Best</span><span id="over-best">0</span></div>
+      </div>
+      <button id="btn-restart" class="primary">Fly again</button>
+    </div>
+  </div>
+
+  <script src="js/noise.js"></script>
+  <script src="js/terrain.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/heli.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

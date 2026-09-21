@@ -2,6 +2,12 @@
 
 A scientific calculator for Android, built with Flutter.
 
+> This repository also contains **Skyline Heli**, a tilt-controlled
+> helicopter game for phones, in [`helicopter_game/`](helicopter_game/).
+> It is a standalone HTML5 page that the `Helicopter game` workflow
+> publishes to GitHub Pages and also builds into a sideloadable Android
+> APK (release `heli-sideload-latest`).
+
 <p>
   <img src="app/store_assets/screenshots/01_scientific_light.png" width="220" alt="Scientific mode, light theme">
   <img src="app/store_assets/screenshots/02_functions_light.png" width="220" alt="Live preview of sin(30)">
@@ -34,6 +40,7 @@ app/                          Flutter application
     generate_screenshots.dart Regenerates the Play Store screenshots
   android/                   Android platform project (Gradle, manifest, icons)
 store_assets/                Play Store icon + feature graphic
+helicopter_game/             Skyline Heli - tilt-controlled helicopter game (HTML5)
 docs/
   PLAY_STORE_RELEASE.md     Step-by-step guide to build, sign, and publish
   STORE_LISTING.md          Ready-to-paste store listing copy

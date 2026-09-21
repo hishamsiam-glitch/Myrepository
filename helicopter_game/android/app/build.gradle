@@ -1,0 +1,57 @@
+plugins {
+    id("com.android.application")
+}
+
+android {
+    namespace = "com.hishamsiam.skylineheli"
+    compileSdk = 35
+
+    defaultConfig {
+        applicationId = "com.hishamsiam.skylineheli"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 1
+        versionName = "1.0.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled = false
+            // Debug-signed so the APK is installable for sideloading without
+            // a keystore. Provide a real signing config before a store upload.
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    // The game's web files live one level up (helicopter_game/); copy them
+    // into the APK's assets at build time so there is a single source.
+    sourceSets {
+        main {
+            assets.srcDirs += layout.buildDirectory.dir("generated/webassets")
+        }
+    }
+}
+
+def webRoot = rootProject.file("..")
+
+tasks.register("copyWebAssets", Copy) {
+    from(webRoot) {
+        include "index.html", "css/**", "js/**"
+    }
+    into layout.buildDirectory.dir("generated/webassets/www")
+}
+
+preBuild.dependsOn("copyWebAssets")
+
+dependencies {
+    // AndroidX pulls in mismatched kotlin-stdlib / kotlin-stdlib-jdk8
+    // versions; the BOM aligns them so the duplicate-class check passes.
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.22"))
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.webkit:webkit:1.12.1")
+}
