@@ -33,7 +33,12 @@ const failedImages = new Set();
 const SELECT_COLOR = new THREE.Color(0x2e6f73);
 
 function init() {
-  renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  try {
+    renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  } catch (e) {
+    post({ type: 'error', message: 'WebGL is not available: ' + (e && e.message ? e.message : e) });
+    return;
+  }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
@@ -437,4 +442,8 @@ window.__viewer = {
   camera: () => camera,
 };
 
-init();
+try {
+  init();
+} catch (e) {
+  post({ type: 'error', message: 'Viewer failed to start: ' + (e && e.message ? e.message : e) });
+}

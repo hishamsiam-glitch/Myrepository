@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -28,6 +30,8 @@ class _Viewer3DScreenState extends State<Viewer3DScreen> {
   late final WebViewController _controller;
   late final SceneExporter _exporter = SceneExporter(widget.plan);
   bool _ready = false;
+  String? _loadError;
+  Timer? _readyTimeout;
   String? _selected;
   bool _sheetOpen = false;
 
@@ -42,11 +46,57 @@ class _Viewer3DScreenState extends State<Viewer3DScreen> {
       ..addJavaScriptChannel('Flutter', onMessageReceived: _onMessage)
       ..setNavigationDelegate(NavigationDelegate(
         onPageFinished: (_) {
-          // The page also posts "ready"; push the scene either way.
+          // The page posts "ready" once its WebGL scene exists; push the
+          // scene either way in case that message raced the page load.
           _pushScene();
+          _armReadyTimeout();
         },
-      ))
-      ..loadFlutterAsset('assets/web/viewer.html');
+        onWebResourceError: (e) {
+          if (e.isForMainFrame ?? true) {
+            _fail('The 3D page could not be loaded (${e.description}).');
+          }
+        },
+      ));
+    _load();
+  }
+
+  /// Loads the bundled viewer as an HTML string. This avoids relying on
+  /// file:///android_asset URLs, which some WebView builds refuse.
+  Future<void> _load() async {
+    setState(() {
+      _ready = false;
+      _loadError = null;
+    });
+    try {
+      final html = await rootBundle.loadString('assets/web/viewer.html');
+      await _controller.loadHtmlString(html, baseUrl: 'https://floorplan-tracer.local/');
+    } catch (e) {
+      _fail('The 3D viewer asset is missing: $e');
+    }
+  }
+
+  void _armReadyTimeout() {
+    _readyTimeout?.cancel();
+    _readyTimeout = Timer(const Duration(seconds: 10), () {
+      if (!_ready && mounted && _loadError == null) {
+        _fail('The 3D view did not start. This phone\'s WebView may not support WebGL; '
+            'updating "Android System WebView" in the Play Store usually fixes it.');
+      }
+    });
+  }
+
+  void _fail(String message) {
+    if (!mounted) return;
+    setState(() {
+      _loadError = message;
+      _ready = false;
+    });
+  }
+
+  @override
+  void dispose() {
+    _readyTimeout?.cancel();
+    super.dispose();
   }
 
   void _onMessage(JavaScriptMessage msg) {
@@ -58,7 +108,13 @@ class _Viewer3DScreenState extends State<Viewer3DScreen> {
     }
     switch (data['type']) {
       case 'ready':
-        _ready = true;
+        _readyTimeout?.cancel();
+        if (mounted) {
+          setState(() {
+            _ready = true;
+            _loadError = null;
+          });
+        }
         _pushScene();
       case 'select':
         final id = data['wallId'] as String?;
@@ -71,7 +127,12 @@ class _Viewer3DScreenState extends State<Viewer3DScreen> {
       case 'snapshot':
         _saveSnapshot(data['data'] as String? ?? '');
       case 'error':
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('3D error: ${data['message']}')));
+        final message = data['message']?.toString() ?? 'unknown error';
+        if (!_ready) {
+          _fail('The 3D view failed to start: $message');
+        } else if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('3D: $message')));
+        }
     }
   }
 
@@ -251,8 +312,31 @@ class _Viewer3DScreenState extends State<Viewer3DScreen> {
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),
-          if (!_ready)
+          if (!_ready && _loadError == null)
             const Center(child: CircularProgressIndicator()),
+          if (_loadError != null)
+            Center(
+              child: Card(
+                margin: const EdgeInsets.all(24),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.error_outline, size: 40),
+                      const SizedBox(height: 12),
+                      Text(_loadError!, textAlign: TextAlign.center),
+                      const SizedBox(height: 16),
+                      FilledButton.icon(
+                        onPressed: _load,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           Positioned(
             left: 12,
             right: 12,
