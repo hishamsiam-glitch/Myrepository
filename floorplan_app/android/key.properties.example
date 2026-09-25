@@ -1,0 +1,6 @@
+# Copy to android/key.properties (git-ignored) to sign release builds with
+# your Play Store upload key. See ../docs/FLOORPLAN_TRACER.md.
+storePassword=CHANGE_ME
+keyPassword=CHANGE_ME
+keyAlias=upload
+storeFile=/absolute/path/to/upload-keystore.jks

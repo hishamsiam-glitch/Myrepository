@@ -1,3 +1,12 @@
+# Apps in this repository
+
+- **Floor Plan Tracer** (`floorplan_app/`): trace a floor plan with the phone
+  camera (ARCore), measure it, mark doors and windows, convert it to an
+  editable 3D model and skin the walls. APK published as the
+  `floorplan-latest` release. See [`floorplan_app/README.md`](floorplan_app/README.md)
+  and [`docs/FLOORPLAN_TRACER.md`](docs/FLOORPLAN_TRACER.md).
+- **Scientific Calculator** (`app/`): below.
+
 # Scientific Calculator
 
 A scientific calculator for Android, built with Flutter.

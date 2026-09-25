@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2E6F73"/>
+      <stop offset="1" stop-color="#1B4A4E"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="40" fill="url(#bg)"/>
+  <!-- room outline, isometric-ish -->
+  <g fill="none" stroke="#F4EFE6" stroke-width="9" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M40 74 L96 46 L152 74 L96 102 Z"/>
+    <path d="M40 74 V126 L96 154 L152 126 V74"/>
+    <path d="M96 102 V154"/>
+  </g>
+  <!-- door on the front-left wall -->
+  <path d="M60 111 V137 L78 146 V120 Z" fill="#F4A261"/>
+  <!-- window on the front-right wall -->
+  <path d="M112 114 L132 104 V122 L112 132 Z" fill="#8ECAE6"/>
+  <!-- camera reticle -->
+  <circle cx="150" cy="44" r="16" fill="none" stroke="#F4EFE6" stroke-width="6"/>
+  <circle cx="150" cy="44" r="4" fill="#F4EFE6"/>
+</svg>
