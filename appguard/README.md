@@ -26,6 +26,15 @@ IMAP/SMTP. The release APK is about 1 MB.
 1. Copy `release/AppGuard-1.0.0.apk` (or the asset on the *AppGuard (latest
    build)* GitHub Release) to the device and open it. Allow installing from
    unknown sources when asked.
+   **"App blocked to protect your device" (Google Play Protect).** In Saudi
+   Arabia and several other countries Play Protect automatically blocks
+   sideloaded apps that declare an accessibility service, which AppGuard
+   needs. Either turn scanning off for the install: *Play Store → profile
+   picture → Play Protect → gear icon → Scan apps with Play Protect → off*,
+   install, then turn it back on (installed apps are kept); or install over
+   USB with `adb install AppGuard-1.0.0.apk`, which is not subject to the
+   block. On Samsung phones also switch off *Settings → Security and
+   privacy → Auto Blocker* if it refuses the install outright.
 2. Open **AppGuard** and create the administrator PIN.
 3. Work through the setup checklist on the main screen:
    * **Accessibility service** – this is what blocks apps and websites.
