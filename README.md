@@ -1,3 +1,14 @@
+# Myrepository
+
+Two Android apps live here:
+
+| Directory   | App                                                                                      |
+|-------------|------------------------------------------------------------------------------------------|
+| `appguard/` | **AppGuard** – whitelist-only app & website control with time-limited, email-approved access. See [`appguard/README.md`](appguard/README.md). Release APK: `appguard/release/`. |
+| `app/`      | **Scientific Calculator** – Flutter calculator (below).                                  |
+
+---
+
 # Scientific Calculator
 
 A scientific calculator for Android, built with Flutter.

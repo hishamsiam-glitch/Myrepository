@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#1E3A5F</color>
+    <color name="primary_dark">#152B47</color>
+    <color name="accent">#F2994A</color>
+    <color name="background">#F4F6FA</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="text_primary">#101828</color>
+    <color name="text_secondary">#5B6472</color>
+    <color name="ok">#1B9E5A</color>
+    <color name="warn">#D9822B</color>
+    <color name="danger">#C62828</color>
+    <color name="blocked_bg">#141821</color>
+    <color name="blocked_card">#1E2430</color>
+    <color name="blocked_text">#F5F7FA</color>
+    <color name="blocked_muted">#A3ADBD</color>
+    <color name="ic_launcher_background">#1E3A5F</color>
+</resources>

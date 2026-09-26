@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- General -->
+        <LinearLayout style="@style/Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView style="@style/CardTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_general" />
+            <Switch
+                android:id="@+id/swProtection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/s_protection" />
+            <TextView style="@style/Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_default_minutes" />
+            <EditText
+                android:id="@+id/etDefaultMinutes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+            <TextView style="@style/Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_approver" />
+            <EditText
+                android:id="@+id/etApprover"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress" />
+            <Switch
+                android:id="@+id/swBrowsers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/s_browsers_allowed" />
+            <Button
+                android:id="@+id/btnAlwaysAllowed"
+                style="@style/FlatButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_always_allowed" />
+        </LinearLayout>
+
+        <!-- Mail -->
+        <LinearLayout style="@style/Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView style="@style/CardTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_mail" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:text="@string/s_mail_help" />
+            <TextView style="@style/Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_preset" />
+            <Spinner
+                android:id="@+id/spPreset"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <TextView style="@style/Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_mail_user" />
+            <EditText
+                android:id="@+id/etMailUser"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress" />
+            <TextView style="@style/Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_mail_pass" />
+            <EditText
+                android:id="@+id/etMailPass"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView style="@style/Label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/s_imap_host" />
+                    <EditText
+                        android:id="@+id/etImapHost"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textUri" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:orientation="vertical">
+                    <TextView style="@style/Label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/s_imap_port" />
+                    <EditText
+                        android:id="@+id/etImapPort"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number" />
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView style="@style/Label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/s_smtp_host" />
+                    <EditText
+                        android:id="@+id/etSmtpHost"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textUri" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:orientation="vertical">
+                    <TextView style="@style/Label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/s_smtp_port" />
+                    <EditText
+                        android:id="@+id/etSmtpPort"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number" />
+                </LinearLayout>
+            </LinearLayout>
+            <Switch
+                android:id="@+id/swSmtpSsl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/s_smtp_ssl" />
+            <TextView style="@style/Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_poll" />
+            <EditText
+                android:id="@+id/etPoll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+            <Switch
+                android:id="@+id/swStrictAuth"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/s_strict_auth" />
+            <Button
+                android:id="@+id/btnTestMail"
+                style="@style/FlatButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_test_mail" />
+            <TextView
+                android:id="@+id/tvMailResult"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary" />
+        </LinearLayout>
+
+        <!-- Commands help -->
+        <LinearLayout style="@style/Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView style="@style/CardTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_email_commands" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:text="@string/s_email_commands_body" />
+        </LinearLayout>
+
+        <!-- Manual -->
+        <LinearLayout style="@style/Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView style="@style/CardTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_manual" />
+            <TextView style="@style/Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_manual_target" />
+            <EditText
+                android:id="@+id/etManualTarget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textUri" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="bottom">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView style="@style/Label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/s_manual_minutes" />
+                    <EditText
+                        android:id="@+id/etManualMinutes"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number" />
+                </LinearLayout>
+                <Button
+                    android:id="@+id/btnGrant"
+                    style="@style/PrimaryButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/s_grant" />
+            </LinearLayout>
+            <Button
+                android:id="@+id/btnRevokeAll"
+                style="@style/FlatButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_revoke_all"
+                android:textColor="@color/danger" />
+        </LinearLayout>
+
+        <!-- Security -->
+        <LinearLayout style="@style/Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView style="@style/CardTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_security" />
+            <Button
+                android:id="@+id/btnChangePin"
+                style="@style/FlatButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_change_pin" />
+            <Button
+                android:id="@+id/btnHarden"
+                style="@style/FlatButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_harden" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:text="@string/s_harden_help" />
+            <Button
+                android:id="@+id/btnDisableAdmin"
+                style="@style/FlatButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/s_disable_admin"
+                android:textColor="@color/danger" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnSave"
+            style="@style/PrimaryButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/s_save" />
+    </LinearLayout>
+</ScrollView>

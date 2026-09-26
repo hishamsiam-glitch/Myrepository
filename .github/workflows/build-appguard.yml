@@ -1,0 +1,57 @@
+name: Build AppGuard APK
+
+on:
+  push:
+    paths:
+      - "appguard/**"
+      - ".github/workflows/build-appguard.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: appguard
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # Signed with the committed release key (appguard/keystore), so this APK
+      # installs over any other AppGuard build from this repository.
+      - run: ./gradlew --no-daemon assembleRelease
+
+      - name: Rename APK
+        run: |
+          VERSION=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
+          cp app/build/outputs/apk/release/app-release.apk "AppGuard-$VERSION.apk"
+          echo "APK=appguard/AppGuard-$VERSION.apk" >> "$GITHUB_ENV"
+          echo "APK_NAME=AppGuard-$VERSION.apk" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: appguard-apk
+          path: ${{ env.APK }}
+
+      # GitHub Release assets are served from github.com's own CDN, which is
+      # reachable from more places than Actions artifact storage.
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete appguard-latest --yes --repo "$GITHUB_REPOSITORY" || true
+          git push origin :refs/tags/appguard-latest || true
+          gh release create appguard-latest "$APK_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "AppGuard (latest build)" \
+            --notes "AppGuard release APK, signed with the repository's release key. Built from commit ${{ github.sha }}. Install on the device to be controlled, then follow appguard/README.md." \
+            --target "${{ github.sha }}"

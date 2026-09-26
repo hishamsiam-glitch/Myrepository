@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AppGuard</string>
+    <string name="title_settings">Administrator settings</string>
+    <string name="title_always_allowed">Always-allowed apps</string>
+    <string name="accessibility_label">AppGuard protection</string>
+    <string name="accessibility_description">AppGuard uses this service to see which app or website is on screen so it can block anything that has not been approved. It does not read passwords or send your screen content anywhere.</string>
+    <string name="device_admin_description">Prevents AppGuard from being uninstalled without the administrator PIN.</string>
+    <string name="device_admin_disable_warning">Disabling this will let anyone remove AppGuard. Enter the administrator PIN inside AppGuard to turn protection off instead.</string>
+
+    <!-- Main -->
+    <string name="status_protected">Protection is active</string>
+    <string name="status_unprotected">Protection is NOT active</string>
+    <string name="setup_title">Setup checklist</string>
+    <string name="setup_pin">Create the administrator PIN</string>
+    <string name="setup_accessibility">Turn on the AppGuard accessibility service</string>
+    <string name="setup_accessibility_hint">On Android 13+ open App info → ⋮ → “Allow restricted settings” first if the switch is greyed out.</string>
+    <string name="setup_admin">Activate device administrator (blocks uninstall)</string>
+    <string name="setup_mail">Connect the device mailbox used to send/receive approvals</string>
+    <string name="setup_notifications">Allow notifications</string>
+    <string name="setup_battery">Disable battery optimisation for AppGuard</string>
+    <string name="setup_overlay">Allow “Display over other apps”</string>
+    <string name="btn_open">Open</string>
+    <string name="btn_done">Done</string>
+    <string name="approvals_title">Active approvals</string>
+    <string name="approvals_empty">Nothing is approved right now. Everything except always-allowed apps is blocked.</string>
+    <string name="pending_title">Pending requests</string>
+    <string name="pending_empty">No requests are waiting for a reply.</string>
+    <string name="btn_check_mail">Check mailbox now</string>
+    <string name="btn_admin">Administrator</string>
+    <string name="btn_unlock_settings">Unlock Android Settings (10 min)</string>
+    <string name="mail_last_check">Last mailbox check: %1$s</string>
+    <string name="mail_never">never</string>
+    <string name="approver_line">Approvals are accepted only from %1$s</string>
+
+    <!-- Blocked -->
+    <string name="blocked_title">Blocked by AppGuard</string>
+    <string name="blocked_app_msg">This app is not approved right now.</string>
+    <string name="blocked_web_msg">This website is not approved right now.</string>
+    <string name="blocked_expired_msg">The approved time for this has run out. Ask for a new approval to continue.</string>
+    <string name="btn_request">Request approval</string>
+    <string name="btn_requested">Request sent – waiting for reply</string>
+    <string name="btn_check_now">Check for approval now</string>
+    <string name="btn_go_home">Go to home screen</string>
+    <string name="btn_go_back">Go back</string>
+    <string name="btn_admin_unlock">Administrator unlock</string>
+    <string name="request_code_label">Request code</string>
+    <string name="request_sent_to">Sent to %1$s. Approval arrives by email; this screen closes automatically when it is granted.</string>
+    <string name="request_failed">Could not send the request: %1$s</string>
+    <string name="request_no_mail">The device mailbox is not set up. Ask the administrator to approve on this device, or configure email in Administrator settings.</string>
+    <string name="approval_expires">Approved until %1$s</string>
+
+    <!-- PIN -->
+    <string name="pin_title">Administrator PIN</string>
+    <string name="pin_create_title">Create administrator PIN</string>
+    <string name="pin_hint">4–8 digits</string>
+    <string name="pin_confirm_hint">Repeat PIN</string>
+    <string name="pin_wrong">Wrong PIN</string>
+    <string name="pin_mismatch">PINs do not match</string>
+    <string name="pin_too_short">Use at least 4 digits</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Settings -->
+    <string name="s_general">General</string>
+    <string name="s_protection">Protection enabled</string>
+    <string name="s_default_minutes">Default approval duration (minutes)</string>
+    <string name="s_approver">Approver email (only this address can approve)</string>
+    <string name="s_browsers_allowed">Let browsers open (websites inside them are still filtered)</string>
+    <string name="s_always_allowed">Choose always-allowed apps…</string>
+    <string name="s_mail">Device mailbox (IMAP / SMTP)</string>
+    <string name="s_mail_help">AppGuard sends requests from this mailbox and reads replies from it. For Gmail create an App Password (Google Account → Security → 2-Step Verification → App passwords) and enable IMAP.</string>
+    <string name="s_preset">Provider preset</string>
+    <string name="s_mail_user">Email address / username</string>
+    <string name="s_mail_pass">Password / app password</string>
+    <string name="s_imap_host">IMAP host</string>
+    <string name="s_imap_port">IMAP port</string>
+    <string name="s_smtp_host">SMTP host</string>
+    <string name="s_smtp_port">SMTP port</string>
+    <string name="s_smtp_ssl">SMTP uses SSL (off = STARTTLS)</string>
+    <string name="s_poll">Mailbox check interval (minutes)</string>
+    <string name="s_strict_auth">Verify sender authenticity (DKIM/SPF headers)</string>
+    <string name="s_test_mail">Test mailbox connection</string>
+    <string name="s_manual">Manual control</string>
+    <string name="s_manual_target">Package name, app name or website</string>
+    <string name="s_manual_minutes">Minutes</string>
+    <string name="s_grant">Approve</string>
+    <string name="s_revoke_all">Revoke all approvals</string>
+    <string name="s_security">Security</string>
+    <string name="s_change_pin">Change administrator PIN</string>
+    <string name="s_harden">Apply device-owner hardening</string>
+    <string name="s_harden_help">Only available when AppGuard was made device owner with:\nadb shell dpm set-device-owner com.hishamsiam.appguard/.GuardDeviceAdminReceiver</string>
+    <string name="s_save">Save settings</string>
+    <string name="s_saved">Settings saved</string>
+    <string name="s_disable_admin">Deactivate device administrator</string>
+    <string name="s_email_commands">Email commands the approver can send</string>
+    <string name="s_email_commands_body">Reply to a request with:\n• APPROVE – allow for the default duration\n• APPROVE 45 – allow for 45 minutes\n• DENY – reject the request\n\nOr send a new email (subject or first line):\n• APPROVE youtube.com 60\n• APPROVE com.instagram.android 30\n• APPROVE Instagram\n• REVOKE youtube.com\n• LOCK – revoke every approval</string>
+
+    <!-- Notifications -->
+    <string name="channel_name">AppGuard approvals</string>
+    <string name="notif_approved">%1$s approved until %2$s</string>
+    <string name="notif_denied">Request for %1$s was denied</string>
+    <string name="notif_revoked">%1$s is blocked again</string>
+</resources>
