@@ -1,0 +1,35 @@
+# Sales HUB Android: build on every push to the saleshub-android branch, commit the APKs to saleshub-android/dist/.
+# Release signing uses saleshub-android/saleshub.jks + keystore.properties when present (private repo only).
+name: Sales HUB APK
+on:
+  push:
+    branches: [ saleshub-android ]
+    paths: [ 'saleshub-android/**', '.github/workflows/saleshub-android.yml' ]
+  workflow_dispatch:
+permissions: { contents: write }
+concurrency: { group: saleshub-apk, cancel-in-progress: true }
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: saleshub-android } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - run: chmod +x gradlew && ./gradlew --no-daemon assembleDebug assembleRelease
+      - name: Collect APKs
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/app-debug.apk dist/SalesHUB-debug.apk
+          if [ -f app/build/outputs/apk/release/app-release.apk ]; then cp app/build/outputs/apk/release/app-release.apk dist/SalesHUB-release.apk; fi
+          if [ -f app/build/outputs/apk/release/app-release-unsigned.apk ]; then echo "release unsigned (no keystore) - not published"; fi
+          ls -la dist
+      - name: Commit APKs
+        run: |
+          cd ..
+          git config user.name "github-actions"; git config user.email "actions@github.com"
+          git add saleshub-android/dist/*.apk
+          git commit -m "Sales HUB APK build ${GITHUB_RUN_NUMBER} [skip ci]" || echo "nothing to commit"
+          git push

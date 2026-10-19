@@ -1,0 +1,11 @@
+<resources>
+    <style name="Theme.SalesHUB" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/indigo</item>
+        <item name="colorPrimaryVariant">@color/indigo</item>
+        <item name="colorSecondary">@color/orange</item>
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/white</item>
+        <item name="android:windowBackground">@color/surface</item>
+    </style>
+</resources>

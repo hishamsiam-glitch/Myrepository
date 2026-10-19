@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Sales HUB</string>
+    <string name="offline_title">No connection</string>
+    <string name="offline_body">Sales HUB needs internet (mobile data or Wi-Fi). Check your connection and try again.</string>
+    <string name="retry">Try again</string>
+    <string name="download_started">Downloading…</string>
+</resources>

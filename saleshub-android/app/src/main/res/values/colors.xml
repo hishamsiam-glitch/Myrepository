@@ -1,0 +1,8 @@
+<resources>
+    <color name="indigo">#3B2A8C</color>
+    <color name="orange">#F3A43B</color>
+    <color name="surface">#F6F7FB</color>
+    <color name="ink">#1F1B3A</color>
+    <color name="muted">#64748B</color>
+    <color name="white">#FFFFFF</color>
+</resources>

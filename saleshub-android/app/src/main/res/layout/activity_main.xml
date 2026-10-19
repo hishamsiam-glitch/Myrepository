@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/surface">
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe" android:layout_width="match_parent" android:layout_height="match_parent">
+        <WebView android:id="@+id/web" android:layout_width="match_parent" android:layout_height="match_parent" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <ProgressBar android:id="@+id/progress" style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent" android:layout_height="3dp" android:layout_gravity="top"
+        android:indeterminate="false" android:max="100" android:progressTint="@color/orange" android:visibility="gone" />
+
+    <LinearLayout android:id="@+id/offline" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical" android:gravity="center" android:padding="32dp" android:visibility="gone" android:background="@color/surface">
+        <ImageView android:layout_width="96dp" android:layout_height="96dp" android:src="@drawable/splash_mark" android:contentDescription="@null" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp"
+            android:text="@string/offline_title" android:textColor="@color/ink" android:textSize="20sp" android:textStyle="bold" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp"
+            android:text="@string/offline_body" android:textColor="@color/muted" android:textSize="15sp" android:gravity="center" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/retry" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="20dp" android:text="@string/retry" android:backgroundTint="@color/indigo" />
+    </LinearLayout>
+</FrameLayout>
